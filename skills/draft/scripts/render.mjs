@@ -6707,6 +6707,9 @@ function validateSpec(obj) {
       if (!ids.includes(v.criterionId)) errors2.push(`verdict references unknown criterionId ${v.criterionId}`);
       if (seen.has(v.criterionId)) errors2.push(`duplicate verdict for ${v.criterionId}`);
       seen.add(v.criterionId);
+      if (v.status === "pass" && (!v.evidence || v.evidence.length === 0)) {
+        errors2.push(`verdict ${v.criterionId} has status pass but no evidence`);
+      }
     }
   }
   return { ok: errors2.length === 0, errors: errors2 };

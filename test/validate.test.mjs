@@ -46,3 +46,17 @@ test('surfaces schema errors (bad enum)', () => {
   assert.equal(r.ok, false);
   assert.ok(r.errors.length > 0);
 });
+
+test('rejects a pass verdict with empty evidence', () => {
+  const bad = structuredClone(good);
+  bad.verdicts = [{ criterionId: 'AC-1', status: 'pass', verificationMode: 'static_review', confidence: 'high', evidence: [], explanation: 'e' }];
+  const r = validateSpec(bad);
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some(e => /AC-1.*pass.*evidence|pass.*requires evidence/i.test(e)));
+});
+
+test('accepts a pass verdict that has evidence', () => {
+  const ok = structuredClone(good);
+  ok.verdicts = [{ criterionId: 'AC-1', status: 'pass', verificationMode: 'static_review', confidence: 'high', evidence: [{ file: 'a.ts', line: 1 }], explanation: 'e' }];
+  assert.deepEqual(validateSpec(ok), { ok: true, errors: [] });
+});
