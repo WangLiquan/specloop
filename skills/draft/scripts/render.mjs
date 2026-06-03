@@ -7021,6 +7021,8 @@ function renderSpecHtml(spec2) {
   const awareness = spec2.awareness || [];
   const sections = spec2.sections || [];
   const criteria = spec2.criteria || [];
+  const openDecisions = decisions.filter((d) => d.status === "open");
+  const decidedDecisions = decisions.filter((d) => d.status !== "open");
   const isCollapsed = (s) => s.collapsed != null ? s.collapsed : s.type !== "flow";
   const indexed = sections.map((s, i) => ({ s, n: i + 1 }));
   const openSections = indexed.filter(({ s }) => !isCollapsed(s));
@@ -7031,12 +7033,12 @@ function renderSpecHtml(spec2) {
     `<h1>${escHtml(spec2.meta.title)}</h1>`,
     `<p class="mast-meta">${mastMeta(spec2, decisions, awareness, criteria)}</p>`,
     `</header>`,
-    renderDecisions(decisions),
+    renderDecisions(openDecisions),
     renderAwareness(awareness),
     ...openSections.map(renderOpenSection),
-    renderFoldZone(spec2.summary, foldSections, criteria)
+    renderFoldZone(spec2.summary, foldSections, criteria, decidedDecisions)
   ].filter(Boolean).join("\n");
-  return page(spec2.meta.title, renderNav(spec2, openSections, foldSections, decisions, awareness, criteria), body, spec2);
+  return page(spec2.meta.title, renderNav(spec2, openSections, foldSections, openDecisions, awareness, criteria, decidedDecisions), body, spec2);
 }
 function mastMeta(spec2, decisions, awareness, criteria) {
   const parts = [];
@@ -7054,16 +7056,18 @@ function decorate(safe) {
 function enrich(raw) {
   return decorate(escHtml(raw));
 }
-function renderDecisions(decisions) {
-  if (!decisions.length) return "";
-  const items = decisions.map((d) => {
-    const status = d.status === "open" ? "open" : "decided";
-    const badge = status === "open" ? `<span class="d-badge open">\u5F85\u62CD\u677F</span>` : `<span class="d-badge decided">\u5DF2\u5B9A</span>`;
-    const opts = Array.isArray(d.options) && d.options.length ? `<ul class="d-opts">${d.options.map((o) => `<li>${enrich(o)}</li>`).join("")}</ul>` : "";
-    const why = d.rationale ? `<p class="why"><span>\u4F9D\u636E</span>${enrich(d.rationale)}</p>` : "";
-    return `<div class="decision ${status}" id="${escHtml(d.id)}"><div class="d-h"><strong class="d-id">${escHtml(d.id)}</strong>${badge}</div><p class="d-q">${enrich(d.question)}</p>${opts}<p class="d-res"><span class="d-res-l">\u62CD\u677F</span>${enrich(d.resolution)}</p>${why}</div>`;
-  }).join("");
+function renderDecisions(openDecisions) {
+  if (!openDecisions.length) return "";
+  const items = openDecisions.map(decisionCard).join("");
   return `<section class="block decisions" id="decisions"><h2><span class="card-n">\u25C7</span>\u9700\u8981\u4F60\u51B3\u7B56</h2>${items}</section>`;
+}
+function decisionCard(d) {
+  const status = d.status === "open" ? "open" : "decided";
+  const badge = status === "open" ? `<span class="d-badge open">\u5F85\u62CD\u677F</span>` : `<span class="d-badge decided">\u5DF2\u5B9A</span>`;
+  const resLabel = status === "open" ? "\u6682\u5B9A" : "\u62CD\u677F";
+  const opts = Array.isArray(d.options) && d.options.length ? `<ul class="d-opts">${d.options.map((o) => `<li>${enrich(o)}</li>`).join("")}</ul>` : "";
+  const why = d.rationale ? `<p class="why"><span>\u4F9D\u636E</span>${enrich(d.rationale)}</p>` : "";
+  return `<div class="decision ${status}" id="${escHtml(d.id)}"><div class="d-h"><strong class="d-id">${escHtml(d.id)}</strong>${badge}</div><p class="d-q">${enrich(d.question)}</p>${opts}<p class="d-res"><span class="d-res-l">${resLabel}</span>${enrich(d.resolution)}</p>${why}</div>`;
 }
 function renderAwareness(awareness) {
   if (!awareness.length) return "";
@@ -7091,10 +7095,18 @@ function renderInner(s) {
 function renderOpenSection({ s, n }) {
   return `<section id="${escHtml(s.id)}" class="card"><h2><span class="card-n">${pad(n)}</span>${escHtml(s.title)}</h2>${renderInner(s)}</section>`;
 }
-function renderFoldZone(summary, foldSections, criteria) {
+function renderFoldZone(summary, foldSections, criteria, decidedDecisions = []) {
   const folds = [];
   if (summary) {
     folds.push(detail("summary", "\u6982\u8FF0", `<p>${enrich(summary)}</p>`));
+  }
+  if (decidedDecisions.length) {
+    folds.push(detail(
+      "decided",
+      `\u5DF2\u51B3\u7B56 <span class="fold-n">${decidedDecisions.length}</span>`,
+      decidedDecisions.map(decisionCard).join(""),
+      "decided"
+    ));
   }
   for (const { s } of foldSections) {
     folds.push(detail(escHtml(s.id), escHtml(s.title), renderInner(s)));
@@ -7118,13 +7130,14 @@ function criteriaInner(criteria) {
   }).join("");
   return `<div class="ac-legend">${legend}</div><ul class="ac-list">${items}</ul>`;
 }
-function renderNav(spec2, openSections, foldSections, decisions, awareness, criteria) {
+function renderNav(spec2, openSections, foldSections, openDecisions, awareness, criteria, decidedDecisions = []) {
   const links = [];
-  if (decisions.length) links.push(navLink("#decisions", "\u25C7", "\u51B3\u7B56\u70B9", true));
+  if (openDecisions.length) links.push(navLink("#decisions", "\u25C7", "\u5F85\u62CD\u677F", true));
   if (awareness.length) links.push(navLink("#awareness", "\u25B2", "\u77E5\u60C5\u9879", true));
   for (const { s, n } of openSections) links.push(navLink(`#${escHtml(s.id)}`, pad(n), escHtml(s.title)));
   const foldChildren = [];
   if (spec2.summary) foldChildren.push(navLink("#summary", "\xB7", "\u6982\u8FF0", false, true));
+  if (decidedDecisions.length) foldChildren.push(navLink("#decided", "\xB7", "\u5DF2\u51B3\u7B56", false, true));
   for (const { s } of foldSections) foldChildren.push(navLink(`#${escHtml(s.id)}`, "\xB7", escHtml(s.title), false, true));
   if (criteria.length) foldChildren.push(navLink("#criteria", "\xB7", "\u9A8C\u6536\u70B9", false, true));
   if (foldChildren.length) {
