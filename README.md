@@ -15,8 +15,8 @@
 ## 安装
 
 ```bash
-npx skills add <owner>/specloop          # 一次装上 draft + verify
-npx skills add <owner>/specloop --skill draft   # 只装其一
+npx skills add WangLiquan/specloop          # 一次装上 draft + verify
+npx skills add WangLiquan/specloop --skill draft   # 只装其一
 ```
 
 > 安装落点随 agent / scope 变化（symlink 或 copy）。装完用 `npx skills list` 自检。
