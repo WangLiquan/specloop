@@ -5,9 +5,9 @@ import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const dir = mkdtempSync(join(tmpdir(), 'specloop-'));
+const dir = mkdtempSync(join(tmpdir(), 'specforge-'));
 const spec = {
-  schemaVersion: '1.0', generator: 'specloop-draft/0.1.0',
+  schemaVersion: '1.0', generator: 'specforge-draft/0.1.0',
   meta: { title: 'CLI Demo', specId: 'cli', revision: 1 },
   summary: 's',
   sections: [{ id: 'a', title: 'A', type: 'prose', body: 'b' }],
@@ -20,7 +20,7 @@ test('render-spec CLI writes a valid spec.html', () => {
   writeFileSync(specPath, JSON.stringify(spec));
   execFileSync('node', ['lib/cli/render-spec-main.mjs', specPath, outPath]);
   const html = readFileSync(outPath, 'utf8');
-  assert.ok(html.includes('id="specloop-data"'));
+  assert.ok(html.includes('id="specforge-data"'));
   assert.ok(html.includes('CLI Demo'));
 });
 

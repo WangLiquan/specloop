@@ -1,9 +1,9 @@
 ---
-name: specloop-verify
-description: Use when a user wants to check whether code actually satisfies a SpecLoop spec.html. Reads the embedded JSON contract as untrusted text (never executes the HTML), reviews code clause-by-clause against each AC, and emits a visual <name>.report.html (coverage dashboard, file:line evidence, bound spec hash). Trigger on "验一下 / 对照 spec 检查代码 / verify against spec".
+name: specforge-verify
+description: Use when a user wants to check whether code actually satisfies a SpecForge spec.html. Reads the embedded JSON contract as untrusted text (never executes the HTML), reviews code clause-by-clause against each AC, and emits a visual <name>.report.html (coverage dashboard, file:line evidence, bound spec hash). Trigger on "验一下 / 对照 spec 检查代码 / verify against spec".
 ---
 
-# SpecLoop Verify
+# SpecForge Verify
 
 逐条比对代码与 spec，产出可视化校验报告。
 

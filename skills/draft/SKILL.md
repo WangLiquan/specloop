@@ -1,9 +1,9 @@
 ---
-name: specloop-draft
+name: specforge-draft
 description: Use when a user wants to turn an idea/requirement into a reviewable spec. Interviews then relentlessly grills the user to resolve every decision branch, then emits a single self-contained <name>.spec.html (visual, zero-dependency, with an embedded machine-readable JSON contract). Trigger on "写个 spec / draft a spec / 把需求理成 spec / spec it".
 ---
 
-# SpecLoop Draft
+# SpecForge Draft
 
 把一个模糊 idea 变成「人能最小成本拍板、机器能消费」的 spec.html。
 

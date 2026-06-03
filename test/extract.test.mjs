@@ -17,7 +17,7 @@ test('round-trips the data island from rendered spec html', () => {
 });
 
 test('throws when no island present', () => {
-  assert.throws(() => extractDataIsland('<html><body>nope</body></html>'), /no #specloop-data/);
+  assert.throws(() => extractDataIsland('<html><body>nope</body></html>'), /no #specforge-data/);
 });
 
 test('throws on oversize input', () => {
@@ -26,7 +26,7 @@ test('throws on oversize input', () => {
 });
 
 test('throws on malformed json island', () => {
-  const broken = '<script type="application/json" id="specloop-data">{ not json }</script>';
+  const broken = '<script type="application/json" id="specforge-data">{ not json }</script>';
   assert.throws(() => extractDataIsland(broken), /not valid JSON/);
 });
 

@@ -17,7 +17,7 @@ const verdicts = [
 test('renders coverage dashboard counts', () => {
   const html = renderReportHtml(spec, verdicts, 'deadbeef');
   assert.ok(html.includes('pass 1') || html.includes('>1<'));
-  assert.ok(html.includes('id="specloop-data"'));
+  assert.ok(html.includes('id="specforge-data"'));
 });
 
 test('binds the spec hash into the report island', () => {

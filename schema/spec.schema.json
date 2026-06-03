@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://specloop.dev/schema/spec.schema.json",
-  "title": "SpecLoop Spec",
+  "$id": "https://specforge.dev/schema/spec.schema.json",
+  "title": "SpecForge Spec",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "generator", "meta", "summary", "sections", "criteria"],

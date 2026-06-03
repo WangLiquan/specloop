@@ -18,7 +18,7 @@ test('renders a full standalone document with CSP and data island', () => {
   const html = renderSpecHtml(spec);
   assert.ok(html.startsWith('<!doctype html>'));
   assert.ok(html.includes('Content-Security-Policy'));
-  assert.ok(html.includes('id="specloop-data"'));
+  assert.ok(html.includes('id="specforge-data"'));
   assert.ok(html.includes('AC-1'));
 });
 

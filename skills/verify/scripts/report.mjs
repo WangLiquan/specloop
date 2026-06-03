@@ -6568,12 +6568,12 @@ var require_ajv = __commonJS({
 import { readFileSync, writeFileSync } from "node:fs";
 
 // lib/extract.mjs
-var ISLAND_RE = /<script\b[^>]*\btype=["']application\/json["'][^>]*\bid=["']specloop-data["'][^>]*>([\s\S]*?)<\/script>/i;
+var ISLAND_RE = /<script\b[^>]*\btype=["']application\/json["'][^>]*\bid=["']specforge-data["'][^>]*>([\s\S]*?)<\/script>/i;
 function extractDataIsland(htmlText, { maxBytes = 5e6 } = {}) {
   if (typeof htmlText !== "string") throw new TypeError("html must be a string");
   if (Buffer.byteLength(htmlText, "utf8") > maxBytes) throw new Error("spec html exceeds size limit");
   const m = htmlText.match(ISLAND_RE);
-  if (!m) throw new Error("no #specloop-data island found");
+  if (!m) throw new Error("no #specforge-data island found");
   try {
     return JSON.parse(m[1]);
   } catch (e) {
@@ -6587,8 +6587,8 @@ var import_ajv = __toESM(require_ajv(), 1);
 // schema/spec.schema.json
 var spec_schema_default = {
   $schema: "http://json-schema.org/draft-07/schema#",
-  $id: "https://specloop.dev/schema/spec.schema.json",
-  title: "SpecLoop Spec",
+  $id: "https://specforge.dev/schema/spec.schema.json",
+  title: "SpecForge Spec",
   type: "object",
   additionalProperties: false,
   required: ["schemaVersion", "generator", "meta", "summary", "sections", "criteria"],
@@ -6771,7 +6771,7 @@ function renderReportHtml(spec2, verdicts2, specHash2) {
     counts[v ? v.status : "na"]++;
   }
   const onlyStatic = verdicts2.length > 0 && verdicts2.every((v) => v.verificationMode === "static_review");
-  const island = { ...spec2, verdicts: verdicts2, report: { boundSpecHash: specHash2, generatedBy: "specloop-verify" } };
+  const island = { ...spec2, verdicts: verdicts2, report: { boundSpecHash: specHash2, generatedBy: "specforge-verify" } };
   const dash = ["pass", "partial", "fail", "na"].map((k) => `<span class="chip ${k}">${k} ${counts[k]}</span>`).join("");
   const banner = onlyStatic ? '<div class="banner">\u26A0\uFE0F \u672A\u8FD0\u884C\u6D4B\u8BD5\uFF1A\u4EE5\u4E0B\u7ED3\u8BBA\u5747\u4E3A\u9759\u6001\u5BA1\u67E5\uFF08static review\uFF09\uFF0C\u975E\u771F\u5B9E\u6267\u884C\u9A8C\u8BC1\u3002</div>' : "";
   const rows = spec2.criteria.map((c) => {
@@ -6793,12 +6793,12 @@ ${rows}`;
 <head>
 <meta charset="utf-8">
 ${CSP_META}
-<title>${escHtml(spec2.meta.title)} \u6821\u9A8C\u62A5\u544A \xB7 SpecLoop</title>
+<title>${escHtml(spec2.meta.title)} \u6821\u9A8C\u62A5\u544A \xB7 SpecForge</title>
 <style>${THEME_CSS}</style>
 </head>
 <body>
 <main>${body}</main>
-<script type="application/json" id="specloop-data">${htmlSafeJsonIsland(island)}</script>
+<script type="application/json" id="specforge-data">${htmlSafeJsonIsland(island)}</script>
 </body>
 </html>`;
 }

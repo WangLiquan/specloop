@@ -9,7 +9,7 @@ const validate = ajv.compile(schema);
 
 const validSpec = {
   schemaVersion: '1.0',
-  generator: 'specloop-draft/0.1.0',
+  generator: 'specforge-draft/0.1.0',
   meta: { title: 'Demo', specId: 'demo-001', revision: 1, previousSpecId: null, createdAt: '2026-06-03' },
   summary: '一句话',
   sections: [

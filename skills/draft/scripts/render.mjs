@@ -6573,8 +6573,8 @@ var import_ajv = __toESM(require_ajv(), 1);
 // schema/spec.schema.json
 var spec_schema_default = {
   $schema: "http://json-schema.org/draft-07/schema#",
-  $id: "https://specloop.dev/schema/spec.schema.json",
-  title: "SpecLoop Spec",
+  $id: "https://specforge.dev/schema/spec.schema.json",
+  title: "SpecForge Spec",
   type: "object",
   additionalProperties: false,
   required: ["schemaVersion", "generator", "meta", "summary", "sections", "criteria"],
@@ -6776,12 +6776,12 @@ function page(title, body, dataObj) {
 <head>
 <meta charset="utf-8">
 ${CSP_META}
-<title>${escHtml(title)} \xB7 SpecLoop</title>
+<title>${escHtml(title)} \xB7 SpecForge</title>
 <style>${THEME_CSS}</style>
 </head>
 <body>
 <main>${body}</main>
-<script type="application/json" id="specloop-data">${htmlSafeJsonIsland(dataObj)}</script>
+<script type="application/json" id="specforge-data">${htmlSafeJsonIsland(dataObj)}</script>
 </body>
 </html>`;
 }
