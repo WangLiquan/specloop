@@ -1,0 +1,110 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://specloop.dev/schema/spec.schema.json",
+  "title": "SpecLoop Spec",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "generator", "meta", "summary", "sections", "criteria"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "generator": { "type": "string", "minLength": 1 },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "specId", "revision"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "specId": { "type": "string", "minLength": 1 },
+        "revision": { "type": "integer", "minimum": 1 },
+        "previousSpecId": { "type": ["string", "null"] },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "summary": { "type": "string" },
+    "sections": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "title", "type", "body"],
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "type": { "const": "prose" },
+              "body": { "type": "string" }
+            }
+          },
+          {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "title", "type", "steps"],
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "type": { "const": "flow" },
+              "steps": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "title", "type", "rows"],
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "type": { "const": "table" },
+              "rows": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } }
+            }
+          }
+        ]
+      }
+    },
+    "criteria": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "text", "priority"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^AC-[0-9]+$" },
+          "text": { "type": "string", "minLength": 1 },
+          "priority": { "enum": ["must", "should", "could"] },
+          "rationale": { "type": "string" }
+        }
+      }
+    },
+    "verdicts": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["criterionId", "status", "verificationMode", "confidence", "evidence", "explanation"],
+        "properties": {
+          "criterionId": { "type": "string", "pattern": "^AC-[0-9]+$" },
+          "status": { "enum": ["pass", "partial", "fail", "na"] },
+          "verificationMode": { "enum": ["static_review", "test", "runtime", "manual_required"] },
+          "confidence": { "enum": ["high", "medium", "low"] },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object", "additionalProperties": false,
+              "required": ["file", "line"],
+              "properties": {
+                "file": { "type": "string" },
+                "line": { "type": "integer", "minimum": 1 },
+                "note": { "type": "string" }
+              }
+            }
+          },
+          "missingEvidenceReason": { "type": ["string", "null"] },
+          "explanation": { "type": "string" }
+        }
+      }
+    },
+    "report": {
+      "type": "object", "additionalProperties": false,
+      "required": ["boundSpecHash", "generatedBy"],
+      "properties": {
+        "boundSpecHash": { "type": "string" },
+        "generatedBy": { "type": "string" }
+      }
+    }
+  }
+}
