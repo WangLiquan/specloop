@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SpecForge · 定义需求 → 验证实现的闭环</title>
+<meta name="description" content="两个 Claude Code skill：把模糊需求拷问成可视化 spec.html，再拿 spec 逐条验代码产出 report.html。">
+<style>
+  :root{
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+    --bg:#fbfaf8;--surface:#f3f0e9;--raised:#fffefb;
+    --head:#1b1a17;--fg:#33302a;--mut:#6c685f;--faint:#9b958a;
+    --line:#e8e3d8;--line-2:#dad4c7;
+    --accent:oklch(0.52 0.15 266);--accent-soft:oklch(0.52 0.15 266 / .10);--accent-ink:oklch(0.46 0.16 266);
+    --ok:#1a7f37;--fail:#cf222e;
+    --shadow:0 1px 2px rgba(40,36,28,.04),0 10px 30px -18px rgba(40,36,28,.22);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#14161b;--surface:#1b1e25;--raised:#1d2129;
+    --head:#f1f2f4;--fg:#bcc1c9;--mut:#9197a0;--faint:#6d727c;
+    --line:#262a32;--line-2:#343a47;
+    --accent:oklch(0.74 0.13 266);--accent-soft:oklch(0.74 0.13 266 / .16);--accent-ink:oklch(0.81 0.12 266);
+    --ok:#3fb950;--fail:#f85149;
+    --shadow:0 1px 2px rgba(0,0,0,.34),0 14px 36px -20px rgba(0,0,0,.66);
+  }}
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.6;
+    -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
+  ::selection{background:var(--accent-soft);color:var(--accent-ink)}
+  a{color:var(--accent-ink);text-decoration:none}
+  a:hover{text-decoration:underline}
+  main{flex:1;width:100%;max-width:760px;margin:0 auto;padding:clamp(40px,9vw,96px) 22px 56px}
+  .eyebrow{font:600 13px/1 var(--mono);letter-spacing:.04em;color:var(--accent-ink);
+    text-transform:uppercase;margin:0 0 18px}
+  h1{font-size:clamp(38px,8vw,60px);line-height:1.04;letter-spacing:-.02em;color:var(--head);
+    margin:0 0 14px;font-weight:760}
+  .lede{font-size:clamp(17px,3.4vw,20px);color:var(--mut);margin:0 0 36px;max-width:48ch}
+  .lede b{color:var(--fg);font-weight:650}
+  .cards{display:grid;gap:14px;grid-template-columns:1fr 1fr;margin:0 0 40px}
+  @media (max-width:560px){.cards{grid-template-columns:1fr}}
+  .card{display:block;background:var(--raised);border:1px solid var(--line);border-radius:14px;
+    padding:20px 20px 22px;box-shadow:var(--shadow);transition:border-color .15s,transform .15s}
+  .card:hover{border-color:var(--accent);transform:translateY(-2px);text-decoration:none}
+  .card .k{font:600 12px/1 var(--mono);color:var(--faint);letter-spacing:.02em}
+  .card .t{font-size:18px;font-weight:700;color:var(--head);margin:9px 0 5px;letter-spacing:-.01em}
+  .card .d{font-size:14px;color:var(--mut);margin:0}
+  .card .go{display:inline-flex;align-items:center;gap:5px;margin-top:14px;font-size:13px;
+    font-weight:650;color:var(--accent-ink)}
+  .install{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;margin:0 0 14px}
+  .install .lbl{font-size:12px;color:var(--mut);margin:0 0 8px}
+  .install code{display:block;font-family:var(--mono);font-size:13.5px;color:var(--head);
+    overflow-x:auto;white-space:nowrap}
+  .install .c{color:var(--faint)}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;color:var(--mut);margin-top:8px}
+  footer{border-top:1px solid var(--line);color:var(--faint);font-size:13px;
+    text-align:center;padding:22px}
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Claude Code skills</p>
+  <h1>SpecForge</h1>
+  <p class="lede"><b>定义需求 → 验证实现</b>的闭环：把一个模糊 idea 拷问成<b>可视化的 spec.html</b>，写完代码再拿它<b>逐条验证</b>实现是否真的对齐。</p>
+
+  <div class="cards">
+    <a class="card" href="./showcase.html">
+      <span class="k">specforge-draft</span>
+      <div class="t">看一份 spec.html ↗</div>
+      <p class="d">访谈 + 拷问后产出的单文件可视化 spec，内嵌机器可读的验收点契约。</p>
+      <span class="go">打开示例 →</span>
+    </a>
+    <a class="card" href="./showcase.report.html">
+      <span class="k">specforge-verify</span>
+      <div class="t">看一份 report.html ↗</div>
+      <p class="d">拿 spec 逐条审代码后的覆盖率报告：pass / partial / fail + file:line 证据。</p>
+      <span class="go">打开示例 →</span>
+    </a>
+  </div>
+
+  <div class="install">
+    <p class="lbl">安装（需 Node ≥ 22，无需 npm install）</p>
+    <code><span class="c">$</span> npx skills add WangLiquan/specforge</code>
+  </div>
+
+  <div class="meta">
+    <a href="https://github.com/WangLiquan/specforge">GitHub 仓库 ↗</a>
+    <span>MIT License</span>
+  </div>
+</main>
+<footer>SpecForge — spec 不再是一坨 markdown，而是人一眼能读、机器也能消费的 HTML 产物。</footer>
+</body>
+</html>
