@@ -12,6 +12,12 @@
 
 spec 不再是一坨 markdown，而是**人一眼能读、机器也能消费**的 HTML 产物；写完代码还能回头验证实现是否真的对齐 spec。
 
+<p align="center">
+  <a href="https://wangliquan.github.io/specforge/showcase.html"><img src="assets/spec-showcase.png" width="49%" alt="spec.html 示例：目标 / 主流程 / 待拍板决策 / 带编号的验收点清单"></a>
+  <a href="https://wangliquan.github.io/specforge/showcase.report.html"><img src="assets/report-showcase.png" width="49%" alt="report.html 示例：覆盖率 dashboard 与逐条 file:line 证据"></a>
+</p>
+<p align="center"><sub>左：<code>draft</code> 产出的 <code>spec.html</code>　·　右：<code>verify</code> 产出的 <code>report.html</code>　·　点图看在线示例</sub></p>
+
 ---
 
 ## 为什么是它
