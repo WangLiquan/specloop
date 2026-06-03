@@ -31,11 +31,16 @@ description: Use when a user wants to turn an idea/requirement into a reviewable
    ```
 
    - `<SKILL_DIR>` 是本 SKILL.md 所在目录（先用 Glob/Read 定位真实路径，勿猜）。
-   - 默认输出 `specs/YYYY-MM-DD-<slug>.spec.html`；同名先问再覆盖。
+   - 默认输出 `specs/YYYY-MM-DD-<slug>.spec.html`；🔴 同名**先问再覆盖**，不静默盖掉用户已有 spec。
    - 脚本会先按 schema 校验，不合规直接报错——按报错修 JSON 再跑。
-   - **Gate**：只要还有 `status:"open"` 的决策，脚本会**拒绝生成并退出**（列出哪些 D-id 待拍板）。正常路径是回到 step 2 用 `AskUserQuestion` 把它们逐条拷问到 `decided`。**仅当 user 明确说「先跳过 / 先生成」**，才追加 `--allow-open` 放行：`render.mjs <spec.json> <out> --allow-open`。
+   - 🔴 **Gate（STOP）**：只要还有 `status:"open"` 的决策，脚本会**拒绝生成并退出**（列出哪些 D-id 待拍板）。正常路径是回到 step 2 用 `AskUserQuestion` 把它们逐条拷问到 `decided`。**仅当 user 明确说「先跳过 / 先生成」**，才追加 `--allow-open` 放行：`render.mjs <spec.json> <out> --allow-open`。
 5. **交付**：提示用户双击打开 spec.html 可视化拍板。后续修改走对话——改 JSON、重跑脚本。
 
 ## 边界
-- 只做「需求 → spec.html」，不写实现代码。
-- 不手工拼 HTML：HTML 一律由 `scripts/render.mjs` 生成（确保转义与 CSP 正确）。
+只做「需求 → spec.html」，产出可视化 spec 供人拍板，不写实现代码。
+
+## 不要做什么
+- ❌ 把没拷问清的决策标 `status:"open"` 糊弄过去当交付——gate 会拦，更别想着绕过它
+- ❌ 没经 user 明确同意就用 `--allow-open` 跳过 gate
+- ❌ 决策只留在对话里、不写进 `decisions[]`
+- ❌ 手工拼 HTML——一律由 `scripts/render.mjs` 生成（保证转义与 CSP）
