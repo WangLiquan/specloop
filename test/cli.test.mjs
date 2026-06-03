@@ -42,3 +42,33 @@ test('render-report CLI consumes spec.html + verdicts and writes report', () => 
   assert.ok(html.includes('校验报告'));
   assert.ok(html.includes('bound spec hash'));
 });
+
+const withOpen = {
+  ...spec,
+  decisions: [
+    { id: 'D-1', question: '哪个接口?', options: ['a', 'b'], resolution: '待定', status: 'open', rationale: 'r' },
+    { id: 'D-2', question: '已定项', options: ['x'], resolution: 'x', status: 'decided', rationale: 'r' }
+  ]
+};
+
+test('render-spec CLI rejects open decisions without --allow-open', () => {
+  const p = join(dir, 'open.json');
+  writeFileSync(p, JSON.stringify(withOpen));
+  let err;
+  try {
+    execFileSync('node', ['lib/cli/render-spec-main.mjs', p, join(dir, 'o.html')], { stdio: 'pipe' });
+  } catch (e) {
+    err = e;
+  }
+  assert.ok(err, '存在 open 决策时应非 0 退出');
+  assert.equal(err.status, 3);
+  assert.match(String(err.stderr), /D-1/); // 报错列出待拍板的 D-id
+});
+
+test('render-spec CLI allows open decisions only with explicit --allow-open', () => {
+  const p = join(dir, 'open2.json');
+  const out = join(dir, 'o2.html');
+  writeFileSync(p, JSON.stringify(withOpen));
+  execFileSync('node', ['lib/cli/render-spec-main.mjs', p, out, '--allow-open'], { stdio: 'pipe' });
+  assert.ok(readFileSync(out, 'utf8').includes('id="specforge-data"'));
+});

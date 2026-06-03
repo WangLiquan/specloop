@@ -10,11 +10,11 @@ description: Use when a user wants to turn an idea/requirement into a reviewable
 ## 流程
 
 1. **发散**：一次一个问题，挖目标 / 非目标 / 约束 / 成功标准。必要时提 2-3 方案带取舍与推荐。
-2. **收敛拷问**：对每个决策分支穷追到底，把模糊点逼成明确选择，直到没有悬而未决项。
+2. **收敛拷问**：对每个决策分支穷追到底，把模糊点逼成明确选择，直到没有悬而未决项。**这是硬要求**——渲染脚本会拒绝带 `open` 决策生成 spec（见 step 4），别把没问清的甩成「待拍板」糊弄过去。每个决策分支带 `options[]`，**优先用 `AskUserQuestion` 逐条弹结构化选项**让 user 当场拍板，而不是默认标 `open`。
 3. **结构化**：把结论写成符合 `references/spec.schema.json` 的 JSON 对象（字段见该 schema）。
 
    **spec.html 是给人 review/拍板看的**——优先沉淀人最该看的三类（渲染时置顶展开）：
-   - `decisions[]` **决策点**：拷问中每个有取舍的分支都显式记一条。ID 用 `D-1 / D-2 …`；`question`=决策项、`options`=候选、`resolution`=当前拍板、`rationale`=为什么。**还没拍板的写 `status:"open"`**（渲染为醒目「待拍板」），已定的写 `status:"decided"`。别把决策只留在对话里。
+   - `decisions[]` **决策点**：拷问中每个有取舍的分支都显式记一条。ID 用 `D-1 / D-2 …`；`question`=决策项、`options`=候选、`resolution`=当前拍板、`rationale`=为什么。默认都应拷问到 `status:"decided"`。`status:"open"`（待拍板）是**逃生舱、不是常态**——只在 **user 明确说「先跳过 / 这条以后再定」** 时才允许保留，且渲染必须显式 `--allow-open`（见 step 4）。别把决策只留在对话里。
    - `awareness[]` **知情项**：用户该知道的影响 / 边界 / 不改动承诺 / 风险。ID 用 `A-1 / A-2 …`；破坏性或风险类写 `severity:"warning"`（标红），其余 `info`。
    - 整体流程用 `sections[]` 里的 `type:"flow"`（默认展开）。
 
@@ -33,6 +33,7 @@ description: Use when a user wants to turn an idea/requirement into a reviewable
    - `<SKILL_DIR>` 是本 SKILL.md 所在目录（先用 Glob/Read 定位真实路径，勿猜）。
    - 默认输出 `specs/YYYY-MM-DD-<slug>.spec.html`；同名先问再覆盖。
    - 脚本会先按 schema 校验，不合规直接报错——按报错修 JSON 再跑。
+   - **Gate**：只要还有 `status:"open"` 的决策，脚本会**拒绝生成并退出**（列出哪些 D-id 待拍板）。正常路径是回到 step 2 用 `AskUserQuestion` 把它们逐条拷问到 `decided`。**仅当 user 明确说「先跳过 / 先生成」**，才追加 `--allow-open` 放行：`render.mjs <spec.json> <out> --allow-open`。
 5. **交付**：提示用户双击打开 spec.html 可视化拍板。后续修改走对话——改 JSON、重跑脚本。
 
 ## 边界

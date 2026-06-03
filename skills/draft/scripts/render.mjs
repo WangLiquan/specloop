@@ -82,23 +82,23 @@ var require_code = __commonJS({
     };
     exports._Code = _Code;
     exports.nil = new _Code("");
-    function _(strs, ...args) {
+    function _(strs, ...args2) {
       const code = [strs[0]];
       let i = 0;
-      while (i < args.length) {
-        addCodeArg(code, args[i]);
+      while (i < args2.length) {
+        addCodeArg(code, args2[i]);
         code.push(strs[++i]);
       }
       return new _Code(code);
     }
     exports._ = _;
     var plus = new _Code("+");
-    function str(strs, ...args) {
+    function str(strs, ...args2) {
       const expr = [safeStringify(strs[0])];
       let i = 0;
-      while (i < args.length) {
+      while (i < args2.length) {
         expr.push(plus);
-        addCodeArg(expr, args[i]);
+        addCodeArg(expr, args2[i]);
         expr.push(plus, safeStringify(strs[++i]));
       }
       optimize(expr);
@@ -653,10 +653,10 @@ var require_codegen = __commonJS({
       }
     };
     var Func = class extends BlockNode {
-      constructor(name, args, async) {
+      constructor(name, args2, async) {
         super();
         this.name = name;
-        this.args = args;
+        this.args = args2;
         this.async = async;
       }
       render(opts) {
@@ -931,8 +931,8 @@ var require_codegen = __commonJS({
         return this;
       }
       // `function` heading (or definition if funcBody is passed)
-      func(name, args = code_1.nil, async, funcBody) {
-        this._blockNode(new Func(name, args, async));
+      func(name, args2 = code_1.nil, async, funcBody) {
+        this._blockNode(new Func(name, args2, async));
         if (funcBody)
           this.code(funcBody).endFunc();
         return this;
@@ -1026,13 +1026,13 @@ var require_codegen = __commonJS({
     }
     exports.not = not;
     var andCode = mappend(exports.operators.AND);
-    function and(...args) {
-      return args.reduce(andCode);
+    function and(...args2) {
+      return args2.reduce(andCode);
     }
     exports.and = and;
     var orCode = mappend(exports.operators.OR);
-    function or(...args) {
-      return args.reduce(orCode);
+    function or(...args2) {
+      return args2.reduce(orCode);
     }
     exports.or = or;
     function mappend(op) {
@@ -1765,8 +1765,8 @@ var require_code2 = __commonJS({
       ];
       if (it.opts.dynamicRef)
         valCxt.push([names_1.default.dynamicAnchors, names_1.default.dynamicAnchors]);
-      const args = (0, codegen_1._)`${dataAndSchema}, ${gen.object(...valCxt)}`;
-      return context !== codegen_1.nil ? (0, codegen_1._)`${func}.call(${context}, ${args})` : (0, codegen_1._)`${func}(${args})`;
+      const args2 = (0, codegen_1._)`${dataAndSchema}, ${gen.object(...valCxt)}`;
+      return context !== codegen_1.nil ? (0, codegen_1._)`${func}.call(${context}, ${args2})` : (0, codegen_1._)`${func}(${args2})`;
     }
     exports.callValidateCode = callValidateCode;
     var newRegExp = (0, codegen_1._)`new RegExp`;
@@ -7044,8 +7044,8 @@ function mastMeta(spec2, decisions, awareness, criteria) {
   const parts = [];
   if (spec2.meta.specId) parts.push(`<span><b>spec</b> ${escHtml(spec2.meta.specId)}</span>`);
   if (spec2.meta.revision != null) parts.push(`<span><b>rev</b> ${escHtml(spec2.meta.revision)}</span>`);
-  const open = decisions.filter((d) => d.status === "open").length;
-  if (decisions.length) parts.push(`<span>${decisions.length} \u51B3\u7B56${open ? ` \xB7 <b class="open-n">${open} \u5F85\u62CD\u677F</b>` : ""}</span>`);
+  const open2 = decisions.filter((d) => d.status === "open").length;
+  if (decisions.length) parts.push(`<span>${decisions.length} \u51B3\u7B56${open2 ? ` \xB7 <b class="open-n">${open2} \u5F85\u62CD\u677F</b>` : ""}</span>`);
   if (awareness.length) parts.push(`<span>${awareness.length} \u77E5\u60C5</span>`);
   parts.push(`<span>${criteria.length} \u9A8C\u6536\u70B9</span>`);
   return parts.join('<span class="dot">\xB7</span>');
@@ -7171,9 +7171,11 @@ ${nav}
 }
 
 // lib/cli/render-spec-main.mjs
-var [, , inPath, outPath] = process.argv;
+var args = process.argv.slice(2);
+var allowOpen = args.includes("--allow-open");
+var [inPath, outPath] = args.filter((a) => !a.startsWith("--"));
 if (!inPath || !outPath) {
-  console.error("usage: render.mjs <spec.json> <out.spec.html>");
+  console.error("usage: render.mjs <spec.json> <out.spec.html> [--allow-open]");
   process.exit(2);
 }
 var spec = JSON.parse(readFileSync(inPath, "utf8"));
@@ -7181,6 +7183,20 @@ var { ok, errors } = validateSpec(spec);
 if (!ok) {
   console.error("spec invalid:\n" + errors.join("\n"));
   process.exit(1);
+}
+var open = (spec.decisions || []).filter((d) => d.status === "open");
+if (open.length && !allowOpen) {
+  console.error(
+    `\u62D2\u7EDD\u751F\u6210\uFF1A\u8FD8\u6709 ${open.length} \u4E2A\u5F85\u62CD\u677F\u51B3\u7B56\uFF08status:"open"\uFF09\u672A\u6536\u655B\u3002
+spec \u4E0D\u8BE5\u5E26\u7740\u60AC\u800C\u672A\u51B3\u9879\u4EA4\u4ED8\u2014\u2014\u5148\u9010\u6761 ask user \u628A\u5B83\u4EEC\u62F7\u95EE\u5230 status:"decided"\uFF1A
+` + open.map((d) => `  - ${d.id ?? "?"}: ${d.question ?? ""}`).join("\n") + "\n\n\u53EA\u6709 user \u660E\u786E\u8BF4\u300C\u5148\u8DF3\u8FC7 / \u5148\u751F\u6210\u300D\u65F6\uFF0C\u624D\u663E\u5F0F\u52A0 --allow-open \u653E\u884C\u3002"
+  );
+  process.exit(3);
+}
+if (open.length && allowOpen) {
+  console.error(
+    `\u26A0 \u5E26 ${open.length} \u4E2A open \u51B3\u7B56\u751F\u6210\uFF08--allow-open \u5DF2\u8C41\u514D\uFF09\uFF1A` + open.map((d) => d.id ?? "?").join(", ")
+  );
 }
 writeFileSync(outPath, renderSpecHtml(spec));
 console.error("wrote " + outPath);
