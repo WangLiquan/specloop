@@ -37,3 +37,18 @@ test('dangerous user text stays inert in body and island', () => {
   assert.ok(!html.includes('</script><img'), 'no island escape');
   assert.ok(html.includes('&lt;img src=x onerror=alert(1)&gt;'));
 });
+
+test('decisions/awareness render at top; criteria folds into <details>', () => {
+  const s = structuredClone(spec);
+  s.decisions = [{ id: 'D-1', question: '选 A 还是 B', resolution: 'A', status: 'open' }];
+  s.awareness = [{ id: 'A-1', text: '会影响下单', severity: 'warning' }];
+  const html = renderSpecHtml(s);
+  assert.ok(html.includes('id="decisions"'), 'decisions block present');
+  assert.ok(html.includes('待拍板'), 'open decision badge present');
+  assert.ok(html.includes('id="awareness"'), 'awareness block present');
+  assert.match(html, /<details[^>]*\bid="criteria"/, 'criteria folded into details');
+  assert.ok(html.includes('AC-1'), 'AC still rendered inside the fold');
+  // 折叠区先于数据岛、且未引入额外 <script>
+  const scripts = html.match(/<script\b[^>]*>/gi) || [];
+  assert.equal(scripts.length, 1);
+});

@@ -60,3 +60,35 @@ test('rejects evidence line <= 0', () => {
   bad.verdicts = [{ criterionId: 'AC-1', status: 'fail', verificationMode: 'static_review', confidence: 'low', evidence: [{ file: 'a', line: 0 }], missingEvidenceReason: 'x', explanation: 'e' }];
   assert.equal(validate(bad), false);
 });
+
+test('accepts decisions, awareness and section collapsed flag', () => {
+  const ok = structuredClone(validSpec);
+  ok.decisions = [{ id: 'D-1', question: '选 A 还是 B', options: ['A', 'B'], resolution: 'A', status: 'open', rationale: 'r' }];
+  ok.awareness = [{ id: 'A-1', text: '会影响下单', severity: 'warning' }];
+  ok.sections[0].collapsed = true;
+  assert.ok(validate(ok), JSON.stringify(validate.errors));
+});
+
+test('rejects bad decision id pattern', () => {
+  const bad = structuredClone(validSpec);
+  bad.decisions = [{ id: 'X-1', question: 'q', resolution: 'a' }];
+  assert.equal(validate(bad), false);
+});
+
+test('rejects decision missing resolution', () => {
+  const bad = structuredClone(validSpec);
+  bad.decisions = [{ id: 'D-1', question: 'q' }];
+  assert.equal(validate(bad), false);
+});
+
+test('rejects bad decision status enum', () => {
+  const bad = structuredClone(validSpec);
+  bad.decisions = [{ id: 'D-1', question: 'q', resolution: 'a', status: 'maybe' }];
+  assert.equal(validate(bad), false);
+});
+
+test('rejects awareness missing text', () => {
+  const bad = structuredClone(validSpec);
+  bad.awareness = [{ id: 'A-1', severity: 'info' }];
+  assert.equal(validate(bad), false);
+});

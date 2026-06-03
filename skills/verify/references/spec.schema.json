@@ -32,7 +32,8 @@
               "id": { "type": "string" },
               "title": { "type": "string" },
               "type": { "const": "prose" },
-              "body": { "type": "string" }
+              "body": { "type": "string" },
+              "collapsed": { "type": "boolean" }
             }
           },
           {
@@ -42,7 +43,8 @@
               "id": { "type": "string" },
               "title": { "type": "string" },
               "type": { "const": "flow" },
-              "steps": { "type": "array", "items": { "type": "string" } }
+              "steps": { "type": "array", "items": { "type": "string" } },
+              "collapsed": { "type": "boolean" }
             }
           },
           {
@@ -52,7 +54,8 @@
               "id": { "type": "string" },
               "title": { "type": "string" },
               "type": { "const": "table" },
-              "rows": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } }
+              "rows": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } },
+              "collapsed": { "type": "boolean" }
             }
           }
         ]
@@ -68,6 +71,33 @@
           "text": { "type": "string", "minLength": 1 },
           "priority": { "enum": ["must", "should", "could"] },
           "rationale": { "type": "string" }
+        }
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "question", "resolution"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^D-[0-9]+$" },
+          "question": { "type": "string", "minLength": 1 },
+          "options": { "type": "array", "items": { "type": "string" } },
+          "resolution": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["decided", "open"] },
+          "rationale": { "type": "string" }
+        }
+      }
+    },
+    "awareness": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "text"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^A-[0-9]+$" },
+          "text": { "type": "string", "minLength": 1 },
+          "severity": { "enum": ["info", "warning"] }
         }
       }
     },
