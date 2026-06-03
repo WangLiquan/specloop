@@ -1,17 +1,10 @@
-// 极严 CSP：无 script-src（任何 inline/外链脚本都不执行）；样式仅允许 inline；图片仅本地/data。
-// 注意：不放 font-src（回落 default-src 'none'），因此**不能引外链/嵌入字体**——
-// 设计上坚持系统字体栈，把等宽字体当作结构性视觉语言（编号、AC-ID、证据、元信息）。
-export const CSP_META =
-  '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; ' +
-  'style-src \'unsafe-inline\'; img-src \'self\' data:; base-uri \'none\'; form-action \'none\'">';
-
-// 单一样式表，spec.html 与 report.html 共用。「锻造规格」风：暖纸白 / 冷炭黑双主题，
-// 跟随系统自动切换（纯 CSS prefers-color-scheme）；单一靛蓝强调色 + 语义状态色；
-// 发丝线 + 留白 + 编号小节 + 等宽点缀。spec 用左侧 sticky 目录（锚点跳转），
-// report 无 <nav> 仅 <main>，flex 容器下 margin:auto 居中。
-// 所有交互（锚点跳转、:target 高亮）纯 CSS、无任何脚本，满足 CSP。
-export const THEME_CSS = `
-:root{
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<title>示例：给博客加暗色模式 校验报告 · SpecForge</title>
+<style>:root{
   color-scheme:light dark;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,"Helvetica Neue",Arial,sans-serif;
   --mono:ui-monospace,"SF Mono",SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
@@ -197,7 +190,7 @@ details.fold{border:1px solid var(--line);border-radius:10px;background:var(--ra
 details.fold>summary{cursor:pointer;list-style:none;padding:12px 16px;font-weight:600;font-size:1rem;
   color:var(--fg);display:flex;align-items:center;gap:9px;user-select:none;scroll-margin-top:24px}
 details.fold>summary::-webkit-details-marker{display:none}
-details.fold>summary::before{content:"\\203A";font-family:var(--mono);color:var(--accent);font-weight:700;
+details.fold>summary::before{content:"\203A";font-family:var(--mono);color:var(--accent);font-weight:700;
   transition:transform .15s;display:inline-block}
 details.fold[open]>summary::before{transform:rotate(90deg)}
 details.fold[open]>summary{border-bottom:1px solid var(--line)}
@@ -242,7 +235,7 @@ details.fold[open]>summary{border-bottom:1px solid var(--line)}
 .verdict .v-meta b{color:var(--fg);font-weight:600}
 .ev{font-family:var(--mono);font-size:.8rem;color:var(--mut);padding:6px 11px;background:var(--surface);
   border:1px solid var(--line);border-radius:7px;margin:5px 0;display:flex;gap:8px;align-items:baseline}
-.ev::before{content:"\\203A";color:var(--accent);font-weight:700}
+.ev::before{content:"\203A";color:var(--accent);font-weight:700}
 .ev b{color:var(--accent-ink);font-weight:600}
 .verdict>p{margin:9px 0 0;font-size:.96rem;color:var(--fg);line-height:1.7;max-width:66ch}
 .meta{color:var(--mut);font-size:.78rem;font-family:var(--mono)}
@@ -265,5 +258,23 @@ details.fold[open]>summary{border-bottom:1px solid var(--line)}
   nav.toc{display:none}
   body{background:#fff;background-image:none}
   .hero,.ac,.verdict,.chip,table{box-shadow:none}
-}
-`.trim();
+}</style>
+</head>
+<body>
+<main><header class="masthead">
+<p class="kicker">校验报告 · REPORT</p>
+<h1>示例：给博客加暗色模式 · 校验报告</h1>
+<p class="meta">bound spec hash <code>512e6a10b2c19e31111f5face0cf8d1703725933564d29cbac7e70e85b8040cd</code> · revision 1</p>
+</header>
+<section class="dashboard">
+<div class="cov-bar"><i class="pass" style="width:50.00%"></i><i class="partial" style="width:0.00%"></i><i class="fail" style="width:25.00%"></i><i class="na" style="width:25.00%"></i></div>
+<div class="dash"><span class="chip pass"><span class="chip-n">2</span><span class="chip-l">pass</span></span><span class="chip partial"><span class="chip-n">0</span><span class="chip-l">partial</span></span><span class="chip fail"><span class="chip-n">1</span><span class="chip-l">fail</span></span><span class="chip na"><span class="chip-n">1</span><span class="chip-l">na</span></span></div>
+</section>
+<div class="banner"><span class="b-ic">⚠️</span><span>未运行测试：以下结论均为静态审查（static review），非真实执行验证。</span></div>
+<div class="verdicts"><div class="verdict pass" id="AC-1"><div class="v-h"><strong class="ac-id">AC-1</strong><span class="vstat pass">pass</span><span class="v-t">页面有可见的明/暗切换控件</span></div><div class="v-meta"><span>mode=<b>static_review</b></span><span>confidence=<b>high</b></span></div><div class="ev"><span><b>src/Header.tsx</b>:42 — 渲染 ThemeToggle，含 aria-label 与键盘聚焦</span></div><p>切换控件在头部固定渲染，可聚焦且有无障碍标签，符合要求。</p></div>
+<div class="verdict pass" id="AC-2"><div class="v-h"><strong class="ac-id">AC-2</strong><span class="vstat pass">pass</span><span class="v-t">切换后主题即时生效，无需刷新</span></div><div class="v-meta"><span>mode=<b>static_review</b></span><span>confidence=<b>high</b></span></div><div class="ev"><span><b>src/theme.ts</b>:18 — onToggle 直接切换 document.documentElement 的 class</span></div><p>切换走根节点 class，颜色经变量层即时更新，未见整页刷新依赖。</p></div>
+<div class="verdict fail" id="AC-3"><div class="v-h"><strong class="ac-id">AC-3</strong><span class="vstat fail">fail</span><span class="v-t">刷新后保留上次选择</span></div><div class="v-meta"><span>mode=<b>static_review</b></span><span>confidence=<b>medium</b></span></div><div class="ev"><span>未见 localStorage 写入或读取</span></div><p>切换逻辑没有任何持久化，刷新后回落默认值，需补 localStorage 的写入与首屏读取。</p></div>
+<div class="verdict na" id="AC-4"><div class="v-h"><strong class="ac-id">AC-4</strong><span class="vstat na">na</span><span class="v-t">未设置过时默认明色</span></div><div class="v-meta"><span>mode=<b>static_review</b></span><span>confidence=<b>low</b></span></div><div class="ev"><span>首屏脚本时序无法静态判定</span></div><p>是否闪烁取决于读取主题的脚本是否早于首次绘制，静态审查无法确定，留待运行期验证。</p></div></div></main>
+<script type="application/json" id="specforge-data">{"schemaVersion":"1.0","generator":"specforge-draft/0.1.0","meta":{"title":"示例：给博客加暗色模式","specId":"showcase-001","revision":1},"summary":"为博客增加可切换的暗色模式，记住用户选择。","sections":[{"id":"goals","title":"目标","type":"prose","body":"用户可一键切换明/暗，刷新后保持。","collapsed":false},{"id":"nongoals","title":"非目标","type":"prose","body":"不做跟随系统时间自动切换。"},{"id":"flow","title":"主流程","type":"flow","steps":["点击切换按钮","主题即时切换","选择写入 localStorage","下次访问读取并应用"]},{"id":"data","title":"存储","type":"table","rows":[["key","值"],["theme","light | dark"]]}],"criteria":[{"id":"AC-1","text":"页面有可见的明/暗切换控件","priority":"must"},{"id":"AC-2","text":"切换后主题即时生效，无需刷新","priority":"must"},{"id":"AC-3","text":"刷新后保留上次选择","priority":"must"},{"id":"AC-4","text":"未设置过时默认明色","priority":"should"}],"decisions":[{"id":"D-1","question":"首次访问、无存储时主题默认值？","options":["默认亮色","跟随系统 prefers-color-scheme"],"resolution":"跟随系统 prefers-color-scheme","status":"decided","rationale":"尊重系统设置、减少误差。"},{"id":"D-2","question":"用户的主题选择存哪里？","options":["localStorage","cookie","账户后端"],"resolution":"localStorage（纯前端、无需登录）","status":"decided"},{"id":"D-3","question":"是否提供「亮 / 暗 / 自动」三档，而非仅亮暗两档？","options":["仅亮/暗两档","亮/暗/自动三档"],"resolution":"待你拍板，倾向三档","status":"open","rationale":"三档更灵活但多一档 UI 与状态。"}],"awareness":[{"id":"A-1","text":"切换瞬间可能首屏白闪（FOUC）：须在 \u003chead\u003e 内联脚本先读存储打 class，否则暗色用户首屏会闪一下亮色。","severity":"warning"},{"id":"A-2","text":"暗色仅覆盖博客正文与导航；第三方评论 iframe 等嵌入内容不受本主题控制。","severity":"info"}],"verdicts":[{"criterionId":"AC-1","status":"pass","verificationMode":"static_review","confidence":"high","evidence":[{"file":"src/Header.tsx","line":42,"note":"渲染 ThemeToggle，含 aria-label 与键盘聚焦"}],"explanation":"切换控件在头部固定渲染，可聚焦且有无障碍标签，符合要求。"},{"criterionId":"AC-2","status":"pass","verificationMode":"static_review","confidence":"high","evidence":[{"file":"src/theme.ts","line":18,"note":"onToggle 直接切换 document.documentElement 的 class"}],"explanation":"切换走根节点 class，颜色经变量层即时更新，未见整页刷新依赖。"},{"criterionId":"AC-3","status":"fail","verificationMode":"static_review","confidence":"medium","evidence":[],"missingEvidenceReason":"未见 localStorage 写入或读取","explanation":"切换逻辑没有任何持久化，刷新后回落默认值，需补 localStorage 的写入与首屏读取。"},{"criterionId":"AC-4","status":"na","verificationMode":"static_review","confidence":"low","evidence":[],"missingEvidenceReason":"首屏脚本时序无法静态判定","explanation":"是否闪烁取决于读取主题的脚本是否早于首次绘制，静态审查无法确定，留待运行期验证。"}],"report":{"boundSpecHash":"512e6a10b2c19e31111f5face0cf8d1703725933564d29cbac7e70e85b8040cd","generatedBy":"specforge-verify"}}</script>
+</body>
+</html>
