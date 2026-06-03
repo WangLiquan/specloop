@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<title>示例：给博客加暗色模式 · SpecLoop</title>
+<style>:root{--ok:#1a7f37;--partial:#9a6700;--fail:#cf222e;--na:#6e7781;--bg:#fff;--fg:#1f2328;--mut:#656d76;--line:#d0d7de}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--bg);line-height:1.6}
+main{max-width:860px;margin:0 auto;padding:32px 20px}
+h1{font-size:1.7rem;margin:0 0 .3em}
+h2{font-size:1.15rem;margin:1.6em 0 .4em;padding-bottom:.2em;border-bottom:1px solid var(--line)}
+.summary{color:var(--mut)}
+section ol,section ul{padding-left:1.3em}
+table{border-collapse:collapse;width:100%}
+td{border:1px solid var(--line);padding:6px 10px}
+.pri{font-size:.72rem;color:var(--mut);border:1px solid var(--line);border-radius:10px;padding:1px 7px;margin:0 4px}
+.dash{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 18px}
+.chip{border-radius:8px;padding:6px 12px;color:#fff;font-size:.85rem}
+.chip.pass{background:var(--ok)}.chip.partial{background:var(--partial)}.chip.fail{background:var(--fail)}.chip.na{background:var(--na)}
+.banner{background:#fff8c5;border:1px solid #d4a72c;border-radius:8px;padding:10px 14px;margin:12px 0}
+.verdict{border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:8px 0}
+.verdict.pass{border-left:4px solid var(--ok)}.verdict.partial{border-left:4px solid var(--partial)}
+.verdict.fail{border-left:4px solid var(--fail)}.verdict.na{border-left:4px solid var(--na)}
+.ev{font-family:ui-monospace,monospace;font-size:.82rem;color:var(--mut)}
+.meta{color:var(--mut);font-size:.8rem}</style>
+</head>
+<body>
+<main><h1>示例：给博客加暗色模式</h1>
+<p class="summary">为博客增加可切换的暗色模式，记住用户选择。</p>
+<section><h2>目标</h2><p>用户可一键切换明/暗，刷新后保持。</p></section>
+<section><h2>非目标</h2><p>不做跟随系统时间自动切换。</p></section>
+<section><h2>主流程</h2><ol><li>点击切换按钮</li><li>主题即时切换</li><li>选择写入 localStorage</li><li>下次访问读取并应用</li></ol></section>
+<section><h2>存储</h2><table><tr><td>key</td><td>值</td></tr><tr><td>theme</td><td>light | dark</td></tr></table></section>
+<section><h2>验收点</h2><ul><li data-id="AC-1"><strong>AC-1</strong><span class="pri">must</span>页面有可见的明/暗切换控件</li><li data-id="AC-2"><strong>AC-2</strong><span class="pri">must</span>切换后主题即时生效，无需刷新</li><li data-id="AC-3"><strong>AC-3</strong><span class="pri">must</span>刷新后保留上次选择</li><li data-id="AC-4"><strong>AC-4</strong><span class="pri">should</span>未设置过时默认明色</li></ul></section></main>
+<script type="application/json" id="specloop-data">{"schemaVersion":"1.0","generator":"specloop-draft/0.1.0","meta":{"title":"示例：给博客加暗色模式","specId":"showcase-001","revision":1},"summary":"为博客增加可切换的暗色模式，记住用户选择。","sections":[{"id":"goals","title":"目标","type":"prose","body":"用户可一键切换明/暗，刷新后保持。"},{"id":"nongoals","title":"非目标","type":"prose","body":"不做跟随系统时间自动切换。"},{"id":"flow","title":"主流程","type":"flow","steps":["点击切换按钮","主题即时切换","选择写入 localStorage","下次访问读取并应用"]},{"id":"data","title":"存储","type":"table","rows":[["key","值"],["theme","light | dark"]]}],"criteria":[{"id":"AC-1","text":"页面有可见的明/暗切换控件","priority":"must"},{"id":"AC-2","text":"切换后主题即时生效，无需刷新","priority":"must"},{"id":"AC-3","text":"刷新后保留上次选择","priority":"must"},{"id":"AC-4","text":"未设置过时默认明色","priority":"should"}]}</script>
+</body>
+</html>
