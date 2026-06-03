@@ -38,6 +38,16 @@ npx skills add WangLiquan/specforge -g               # 装到全局(所有项目
 
 **运行期要求**：你的机器需有 `node`（≥ 22）—— 两个 skill 会在本地调用自带脚本生成 HTML。脚本已 inline 全部依赖，**无需 `npm install`**。
 
+## 更新
+
+```bash
+npx skills update            # 更新所有已装 skill（自动识别 project / global scope）
+npx skills update -y         # 同上，非交互
+npx skills update specforge-draft specforge-verify   # 只更新这两个
+```
+
+更新拉取的是仓库最新版；更新后需**新开会话**才会加载新版（Claude Code 在会话启动时载入 skill）。当初若用手动软链安装（非 `npx skills add`），则到本地 repo `git pull` 即可。
+
 ---
 
 ## 怎么用
