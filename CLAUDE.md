@@ -16,3 +16,8 @@
 ## 校验
 
 - `npm run check` = schema 同步检查 + bundle 一致性检查 + `node --test` 全部测试。
+
+## 发布
+
+- `showcase.html` / `showcase.report.html` / `index.html`（落地页）经 GitHub Pages 发布：**branch deploy（main 分支 / 根路径）**，靠根目录 `.nojekyll` 原样托管静态文件，URL `https://wangliquan.github.io/specforge/`。无 Pages workflow。
+- README 首屏截图在 `assets/{spec,report}-showcase.png`，由 Playwright 截 showcase 页生成——**改了 showcase 的视觉后需重新截图**再同步 README，否则首屏与真实产物脱节。
