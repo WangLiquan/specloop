@@ -1,0 +1,15 @@
+{
+  "name": "specforge-marketplace",
+  "owner": {
+    "name": "WangLiquan"
+  },
+  "description": "SpecForge —— spec 起草与验证工具的官方 marketplace。",
+  "plugins": [
+    {
+      "name": "specforge",
+      "source": "./",
+      "description": "draft（需求 → spec.html）+ verify（spec → report.html）两个 skill。",
+      "version": "1.0.0"
+    }
+  ]
+}

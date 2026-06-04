@@ -9,8 +9,8 @@
     "test": "node --test",
     "sync": "node scripts/sync-schema.mjs",
     "bundle": "node scripts/bundle.mjs",
-    "build": "node scripts/sync-schema.mjs && node scripts/bundle.mjs",
-    "check": "node scripts/sync-schema.mjs --check && node scripts/bundle.mjs --check && node --test"
+    "build": "node scripts/sync-schema.mjs && node scripts/bundle.mjs && node scripts/sync-version.mjs",
+    "check": "node scripts/sync-schema.mjs --check && node scripts/bundle.mjs --check && node scripts/sync-version.mjs --check && node --test"
   },
   "devDependencies": {
     "ajv": "^8.17.1",
