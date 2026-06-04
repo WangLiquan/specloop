@@ -1,6 +1,6 @@
 ---
 name: specforge-draft
-description: Use when a user wants to turn an idea/requirement into a reviewable spec. Interviews then relentlessly grills the user to resolve every decision branch, then emits a single self-contained <name>.spec.html (visual, zero-dependency, with an embedded machine-readable JSON contract). Trigger on "写个 spec / draft a spec / 把需求理成 spec / spec it".
+description: Use BEFORE writing code for any non-trivial or ambiguous requirement - explore intent, requirements and design before implementation instead of coding from a vague ask. Interviews then relentlessly grills the user to resolve every decision branch, then emits a single self-contained <name>.spec.html (visual, zero-dependency, with an embedded machine-readable JSON contract). Trigger on "写个 spec / draft a spec / 把需求理成 spec / spec it".
 ---
 
 # SpecForge Draft
