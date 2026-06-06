@@ -1,6 +1,6 @@
 ---
 name: specforge-draft
-description: Use BEFORE writing code for any non-trivial or ambiguous requirement - explore intent, requirements and design before implementation instead of coding from a vague ask. Interviews then relentlessly grills the user to resolve every decision branch, then emits a single self-contained <name>.spec.html (visual, zero-dependency, with an embedded machine-readable JSON contract). Trigger on "写个 spec / draft a spec / 把需求理成 spec / spec it".
+description: Use BEFORE committing effort to any non-trivial or ambiguous thing - a feature, a design, a plan, a decision - to think it through and pin it down instead of acting on a vague ask. Interviews then relentlessly grills the user to resolve every decision branch, then emits a single self-contained <name>.spec.html (visual, zero-dependency, with an embedded machine-readable JSON contract). Use whenever the user wants to nail something fuzzy down into a decided, reviewable spec before investing - not for casual chat. Trigger on that intent, including phrasings like "写个 spec / 开个 spec / 来个 spec / 走一个 spec / 把这事理清楚再做 / draft a spec / spec it / let's spec this out".
 ---
 
 # SpecForge Draft

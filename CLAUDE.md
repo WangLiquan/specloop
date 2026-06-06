@@ -1,6 +1,6 @@
 # SpecForge
 
-两个 skill：`specforge-draft`（把模糊需求拷问成可视化 `*.spec.html`）+ `specforge-verify`（拿 spec 逐条验代码，产出 `*.report.html`）。
+两个 skill：`specforge-draft`（把模糊需求拷问成可视化 `*.spec.html`）+ `specforge-verify`（拿 spec 逐条验落地产物，产出 `*.report.html`）。定位是「任何要想清楚、定下来、再回头验收的事」，代码只是最常见的产物——不是前提（详见两个 SKILL.md 的 description）。
 
 ## 源 vs 派生产物（红线）
 
