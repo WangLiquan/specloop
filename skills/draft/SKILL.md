@@ -1,6 +1,6 @@
 ---
 name: specforge-draft
-description: Use BEFORE committing effort to any non-trivial or ambiguous thing - a feature, a design, a plan, a decision - to think it through and pin it down instead of acting on a vague ask. Interviews then relentlessly grills the user to resolve every decision branch, then emits a single self-contained <name>.spec.html (visual, zero-dependency, with an embedded machine-readable JSON contract). Use whenever the user wants to nail something fuzzy down into a decided, reviewable spec before investing - not for casual chat. Trigger on that intent, including phrasings like "写个 spec / 开个 spec / 来个 spec / 走一个 spec / 把这事理清楚再做 / draft a spec / spec it / let's spec this out".
+description: Use BEFORE committing effort to any non-trivial or ambiguous thing - a feature, design, plan, decision, refactor, deletion - to pin it down instead of acting on a vague ask. A proposal / RFC / design doc / 提案 / 方案 / 评审稿 counts as a spec - route it here. Applies whether the user asks or you (the agent) decide such a doc is needed before acting. Relentlessly grills every decision branch, then emits one self-contained <name>.spec.html (visual, zero-dep, embedded JSON contract). Trigger on that intent: "写个 spec / 写个提案 / 起个 RFC / 出个方案 / 把这事理清楚再做 / draft a spec / write a proposal / spec it".
 ---
 
 # SpecForge Draft
@@ -38,6 +38,8 @@ description: Use BEFORE committing effort to any non-trivial or ambiguous thing 
 
 ## 边界
 只做「需求 → spec.html」，产出可视化 spec 供人拍板，不写实现代码。
+
+「要评审、要拍板、再回头验收」的文档——提案 / RFC / 方案 / design doc / 评审稿——一律走本 skill 产出 spec.html，**不另写 `docs/proposals/*.md` 之类的裸 markdown**。它们和 spec 是同一件事，别因为换了个名字就绕开。
 
 ## 不要做什么
 - ❌ 把没拷问清的决策标 `status:"open"` 糊弄过去当交付——gate 会拦，更别想着绕过它
