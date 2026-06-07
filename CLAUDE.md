@@ -5,9 +5,9 @@
 ## 源 vs 派生产物（红线）
 
 - **源**：`lib/`（渲染/抽取逻辑）、`schema/spec.schema.json`
-- **派生**：`skills/*/scripts/*.mjs`（由 `lib/` esbuild 打包）、`skills/*/references/*.json`（由 `schema/` 同步）
-- 改了 `lib/` 或 `schema/` 后**必须跑 `npm run build`** 重新生成派生文件再提交，否则 `npm run check`（CI 同款）的一致性校验会拦。
-- **禁止手改 `skills/*/scripts/*.mjs`**——它是 bundle 产物，下次 build 会覆盖。
+- **派生**：`skills/*/scripts/*.mjs`（由 `lib/` esbuild 打包）、`skills/*/references/*.json`（由 `schema/` 同步）、`.claude-plugin/{plugin.json,marketplace.json}` 的 `version` 字段（由 `package.json.version` 经 `scripts/sync-version.mjs` 同步）。
+- 改了 `lib/` / `schema/`，或 bump 了 `package.json` version 后，**必须跑 `npm run build`** 重新生成派生文件再提交，否则 `npm run check`（CI 同款）的一致性校验会拦。
+- **禁止手改 `skills/*/scripts/*.mjs`** 或这两处 plugin/marketplace 的 `version`——都是派生产物，下次 build 会覆盖。版本号唯一真源是 `package.json.version`。
 
 ## 关键契约
 
@@ -15,7 +15,11 @@
 
 ## 校验
 
-- `npm run check` = schema 同步检查 + bundle 一致性检查 + `node --test` 全部测试。
+- `npm run check` = schema 同步检查 + bundle 一致性检查 + version 一致性检查（三处 version）+ `node --test` 全部测试。
+
+## 分发
+
+- 两条通道并存、命名空间隔离：`npx skills add WangLiquan/specforge`（skill 通道）与 Claude Code `/plugin`（plugin 通道，靠根目录 `.claude-plugin/{plugin.json,marketplace.json}`）。加 plugin manifest 是纯 additive，不影响 skill 通道。发版流程：bump `package.json` version → `npm run build` → commit → `git tag -a vX` → `git push --tags`。
 
 ## 发布
 
