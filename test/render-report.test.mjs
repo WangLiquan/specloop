@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderReportHtml } from '../lib/render-report.mjs';
+import { extractDataIsland } from '../lib/extract.mjs';
 
 const spec = {
   schemaVersion: '1.0', generator: 'g',
@@ -28,6 +29,13 @@ test('binds the spec hash into the report island', () => {
 test('shows untested banner when only static_review present', () => {
   const html = renderReportHtml(spec, verdicts, 'deadbeef');
   assert.match(html, /未运行测试|static review/i);
+});
+
+test('preserves opaque meta.ext payload verbatim into the report island', () => {
+  const withExt = structuredClone(spec);
+  withExt.meta.ext = { mobile: { domain: 'pay', feat: 'checkout', version: 3 } };
+  const html = renderReportHtml(withExt, verdicts, 'deadbeef');
+  assert.deepEqual(extractDataIsland(html).meta.ext, withExt.meta.ext);
 });
 
 test('only script tag is the json island', () => {

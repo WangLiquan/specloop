@@ -6590,7 +6590,8 @@ var spec_schema_default = {
         specId: { type: "string", minLength: 1 },
         revision: { type: "integer", minimum: 1 },
         previousSpecId: { type: ["string", "null"] },
-        createdAt: { type: "string" }
+        createdAt: { type: "string" },
+        ext: { type: "object" }
       }
     },
     summary: { type: "string" },

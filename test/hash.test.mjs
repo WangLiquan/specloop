@@ -20,6 +20,12 @@ test('hash ignores verdicts and presentation-only meta', () => {
   assert.equal(specHash(base), specHash(withExtras));
 });
 
+test('hash ignores vendor payload under meta.ext', () => {
+  const withExt = structuredClone(base);
+  withExt.meta = { title: 'T', specId: 'd', revision: 1, ext: { mobile: { domain: 'pay', feat: 'checkout', version: 3 } } };
+  assert.equal(specHash(base), specHash(withExt));
+});
+
 test('hash changes when a criterion text changes', () => {
   const changed = structuredClone(base);
   changed.criteria[0].text = 'y';

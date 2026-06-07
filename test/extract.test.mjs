@@ -16,6 +16,22 @@ test('round-trips the data island from rendered spec html', () => {
   assert.deepEqual(extractDataIsland(html), spec);
 });
 
+test('preserves opaque meta.ext payload verbatim through render round-trip', () => {
+  const withExt = structuredClone(spec);
+  withExt.meta.ext = { mobile: { domain: 'pay', feat: 'checkout', sources: ['figma://abc'], version: 3 } };
+  const html = renderSpecHtml(withExt);
+  assert.deepEqual(extractDataIsland(html).meta.ext, withExt.meta.ext);
+});
+
+test('does not leak meta.ext into visible html', () => {
+  const withExt = structuredClone(spec);
+  withExt.meta.ext = { mobile: { secretMarker: 'ZZ_EXT_LEAK_ZZ' } };
+  const html = renderSpecHtml(withExt);
+  // marker 只允许出现在数据岛里，不得泄进可见 HTML 正文
+  const island = html.match(/<script\b[^>]*id=["']specforge-data["'][^>]*>[\s\S]*?<\/script>/i)[0];
+  assert.equal(html.replace(island, '').includes('ZZ_EXT_LEAK_ZZ'), false);
+});
+
 test('throws when no island present', () => {
   assert.throws(() => extractDataIsland('<html><body>nope</body></html>'), /no #specforge-data/);
 });
