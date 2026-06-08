@@ -1,6 +1,6 @@
 ---
 name: specforge-draft
-description: Use BEFORE committing effort to any non-trivial or ambiguous thing - a feature, design, plan, decision, refactor, deletion - to pin it down instead of acting on a vague ask. A proposal / RFC / design doc / 提案 / 方案 / 评审稿 counts as a spec - route it here. Applies whether the user asks or you (the agent) decide such a doc is needed before acting. Relentlessly grills every decision branch, then emits one self-contained <name>.spec.html (visual, zero-dep, embedded JSON contract). Trigger on that intent: "写个 spec / 写个提案 / 起个 RFC / 出个方案 / 把这事理清楚再做 / draft a spec / write a proposal / spec it".
+description: Use BEFORE committing effort to any non-trivial or ambiguous thing - a feature, design, plan, decision, refactor, deletion - to pin it down instead of acting on a vague ask. A proposal / RFC / design doc / 提案 / 方案 / 评审稿 counts as a spec - route it here. Applies whether the user asks or you (the agent) decide such a doc is needed before acting. Relentlessly grills every decision branch, then emits one self-contained <name>.spec.html (visual, zero-dep, embedded JSON contract). Trigger on that intent — "写个 spec / 写个提案 / 起个 RFC / 出个方案 / 把这事理清楚再做 / draft a spec / write a proposal / spec it".
 ---
 
 # SpecForge Draft
