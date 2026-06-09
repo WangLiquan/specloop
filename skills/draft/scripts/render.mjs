@@ -6681,44 +6681,6 @@ var spec_schema_default = {
           severity: { enum: ["info", "warning"] }
         }
       }
-    },
-    verdicts: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["criterionId", "status", "verificationMode", "confidence", "evidence", "explanation"],
-        properties: {
-          criterionId: { type: "string", pattern: "^AC-[0-9]+$" },
-          status: { enum: ["pass", "partial", "fail", "na"] },
-          verificationMode: { enum: ["static_review", "test", "runtime", "manual_required"] },
-          confidence: { enum: ["high", "medium", "low"] },
-          evidence: {
-            type: "array",
-            items: {
-              type: "object",
-              additionalProperties: false,
-              required: ["file", "line"],
-              properties: {
-                file: { type: "string" },
-                line: { type: "integer", minimum: 1 },
-                note: { type: "string" }
-              }
-            }
-          },
-          missingEvidenceReason: { type: ["string", "null"] },
-          explanation: { type: "string" }
-        }
-      }
-    },
-    report: {
-      type: "object",
-      additionalProperties: false,
-      required: ["boundSpecHash", "generatedBy"],
-      properties: {
-        boundSpecHash: { type: "string" },
-        generatedBy: { type: "string" }
-      }
     }
   }
 };
@@ -6734,17 +6696,6 @@ function validateSpec(obj) {
   }
   const ids = obj.criteria.map((c) => c.id);
   if (new Set(ids).size !== ids.length) errors2.push("criteria[].id must be unique");
-  if (Array.isArray(obj.verdicts)) {
-    const seen = /* @__PURE__ */ new Set();
-    for (const v of obj.verdicts) {
-      if (!ids.includes(v.criterionId)) errors2.push(`verdict references unknown criterionId ${v.criterionId}`);
-      if (seen.has(v.criterionId)) errors2.push(`duplicate verdict for ${v.criterionId}`);
-      seen.add(v.criterionId);
-      if (v.status === "pass" && (!v.evidence || v.evidence.length === 0)) {
-        errors2.push(`verdict ${v.criterionId} has status pass but no evidence`);
-      }
-    }
-  }
   return { ok: errors2.length === 0, errors: errors2 };
 }
 
@@ -6955,46 +6906,6 @@ details.fold[open]>summary{border-bottom:1px solid var(--line)}
 .fold-body>p:first-child{margin-top:6px}
 .fold.criteria .ac-legend{margin:6px 0 18px}
 
-/* \u2500\u2500 report.html \u4E13\u7528\uFF08\u5171\u7528\u6837\u5F0F\u8868\uFF09 \u2500\u2500 */
-.dashboard{margin:30px 0 6px}
-.cov-bar{display:flex;height:12px;border-radius:20px;overflow:hidden;background:var(--surface);
-  border:1px solid var(--line);margin:0 0 16px}
-.cov-bar i{display:block;height:100%}
-.cov-bar i.pass{background:var(--ok)}.cov-bar i.partial{background:var(--partial)}
-.cov-bar i.fail{background:var(--fail)}.cov-bar i.na{background:var(--na)}
-.dash{display:flex;gap:10px;flex-wrap:wrap;margin:0}
-.chip{display:flex;align-items:baseline;gap:7px;border-radius:11px;padding:9px 14px;
-  background:var(--raised);border:1px solid var(--line);box-shadow:var(--shadow)}
-.chip .chip-n{font-size:1.35rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
-.chip .chip-l{font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
-.chip.pass .chip-n{color:var(--ok)}.chip.partial .chip-n{color:var(--partial)}
-.chip.fail .chip-n{color:var(--fail)}.chip.na .chip-n{color:var(--na)}
-.banner{display:flex;gap:11px;align-items:flex-start;background:var(--partial-bg);
-  border:1px solid var(--partial);border-radius:11px;padding:12px 15px;margin:18px 0;font-size:.92rem;color:var(--fg)}
-.banner .b-ic{font-size:1rem;line-height:1.5}
-.verdicts{margin-top:8px}
-.verdict{background:var(--raised);border:1px solid var(--line);border-left:3px solid var(--na);
-  border-radius:0 12px 12px 0;padding:14px 18px 16px;margin:12px 0;scroll-margin-top:24px}
-.verdict.pass{border-left-color:var(--ok)}.verdict.partial{border-left-color:var(--partial)}
-.verdict.fail{border-left-color:var(--fail)}.verdict.na{border-left-color:var(--na)}
-.verdict .v-h{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin-bottom:7px}
-.verdict .ac-id{font-family:var(--mono);font-size:.84rem;font-weight:650}
-.verdict .vstat{font-family:var(--mono);font-size:.64rem;font-weight:700;letter-spacing:.08em;
-  text-transform:uppercase;padding:3px 9px;border-radius:20px;color:#fff}
-.vstat.pass{background:var(--ok)}.vstat.partial{background:var(--partial)}
-.vstat.fail{background:var(--fail)}.vstat.na{background:var(--na)}
-.verdict .v-t{font-size:1.02rem;color:var(--head);flex:1 1 240px;min-width:0}
-.verdict .v-meta{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 9px}
-.verdict .v-meta span{font-family:var(--mono);font-size:.7rem;color:var(--mut);background:var(--surface);
-  border:1px solid var(--line);border-radius:6px;padding:2px 8px}
-.verdict .v-meta b{color:var(--fg);font-weight:600}
-.ev{font-family:var(--mono);font-size:.8rem;color:var(--mut);padding:6px 11px;background:var(--surface);
-  border:1px solid var(--line);border-radius:7px;margin:5px 0;display:flex;gap:8px;align-items:baseline}
-.ev::before{content:"\\203A";color:var(--accent);font-weight:700}
-.ev b{color:var(--accent-ink);font-weight:600}
-.verdict>p{margin:9px 0 0;font-size:.96rem;color:var(--fg);line-height:1.7;max-width:66ch}
-.meta{color:var(--mut);font-size:.78rem;font-family:var(--mono)}
-
 /* \u2500\u2500 \u7A84\u5C4F\uFF1A\u76EE\u5F55\u9000\u5316\u4E3A\u9876\u90E8\u6A2A\u6392 \u2500\u2500 */
 @media(max-width:820px){
   body{display:block;background-image:none}
@@ -7012,7 +6923,7 @@ details.fold[open]>summary{border-bottom:1px solid var(--line)}
 @media print{
   nav.toc{display:none}
   body{background:#fff;background-image:none}
-  .hero,.ac,.verdict,.chip,table{box-shadow:none}
+  .hero,.ac,table{box-shadow:none}
 }
 `.trim();
 
