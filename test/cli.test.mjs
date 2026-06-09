@@ -30,17 +30,18 @@ test('render-spec CLI rejects invalid spec with non-zero exit', () => {
   assert.throws(() => execFileSync('node', ['lib/cli/render-spec-main.mjs', bad, join(dir, 'x.html')], { stdio: 'pipe' }));
 });
 
-test('render-report CLI consumes spec.html + verdicts and writes report', () => {
+test('extract CLI prints the validated spec island as JSON to stdout', () => {
   const specHtml = join(dir, 'out.spec.html'); // 上面已生成
-  const verdictsPath = join(dir, 'verdicts.json');
-  const outPath = join(dir, 'out.report.html');
-  writeFileSync(verdictsPath, JSON.stringify([
-    { criterionId: 'AC-1', status: 'pass', verificationMode: 'static_review', confidence: 'high', evidence: [{ file: 'a.ts', line: 1 }], explanation: 'ok' }
-  ]));
-  execFileSync('node', ['lib/cli/render-report-main.mjs', specHtml, verdictsPath, outPath]);
-  const html = readFileSync(outPath, 'utf8');
-  assert.ok(html.includes('校验报告'));
-  assert.ok(html.includes('bound spec hash'));
+  const out = execFileSync('node', ['lib/cli/extract-main.mjs', specHtml], { encoding: 'utf8' });
+  const parsed = JSON.parse(out);
+  assert.equal(parsed.meta.title, 'CLI Demo');
+  assert.equal(parsed.criteria[0].id, 'AC-1');
+});
+
+test('extract CLI rejects a non-spec html with non-zero exit', () => {
+  const notSpec = join(dir, 'plain.html');
+  writeFileSync(notSpec, '<html><body>no island here</body></html>');
+  assert.throws(() => execFileSync('node', ['lib/cli/extract-main.mjs', notSpec], { stdio: 'pipe' }));
 });
 
 const withOpen = {

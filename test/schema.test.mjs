@@ -45,22 +45,6 @@ test('rejects bad criterion priority enum', () => {
   assert.equal(validate(bad), false);
 });
 
-test('valid verdicts pass', () => {
-  const ok = structuredClone(validSpec);
-  ok.verdicts = [{
-    criterionId: 'AC-1', status: 'pass', verificationMode: 'static_review',
-    confidence: 'high', evidence: [{ file: 'src/x.ts', line: 42, note: 'n' }],
-    missingEvidenceReason: null, explanation: 'e'
-  }];
-  assert.ok(validate(ok), JSON.stringify(validate.errors));
-});
-
-test('rejects evidence line <= 0', () => {
-  const bad = structuredClone(validSpec);
-  bad.verdicts = [{ criterionId: 'AC-1', status: 'fail', verificationMode: 'static_review', confidence: 'low', evidence: [{ file: 'a', line: 0 }], missingEvidenceReason: 'x', explanation: 'e' }];
-  assert.equal(validate(bad), false);
-});
-
 test('accepts decisions, awareness and section collapsed flag', () => {
   const ok = structuredClone(validSpec);
   ok.decisions = [{ id: 'D-1', question: '选 A 还是 B', options: ['A', 'B'], resolution: 'A', status: 'open', rationale: 'r' }];

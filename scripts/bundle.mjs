@@ -7,7 +7,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const check = process.argv.includes('--check');
 const jobs = [
   { in: 'lib/cli/render-spec-main.mjs', out: 'skills/draft/scripts/render.mjs' },
-  { in: 'lib/cli/render-report-main.mjs', out: 'skills/verify/scripts/report.mjs' }
+  { in: 'lib/cli/extract-main.mjs', out: 'skills/verify/scripts/extract.mjs' }
 ];
 
 let drift = false;
