@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SpecForge · 定义需求 → 验证实现的闭环</title>
-<meta name="description" content="两个 Claude Code skill：把模糊需求拷问成可视化 spec.html，再拿 spec 逐条验代码、在对话里给出差距清单。">
+<meta name="description" content="两个 Claude Code skill：把模糊需求拷问成可视化 spec.html，再拿 spec 逐条验代码、把判定回写进 spec 并在对话里给出差距清单。">
 <style>
   :root{
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,"Helvetica Neue",Arial,sans-serif;
@@ -75,7 +75,7 @@
     <a class="card" href="https://github.com/WangLiquan/specforge#3-用-verify-验证实现">
       <span class="k">specforge-verify</span>
       <div class="t">verify 怎么验 ↗</div>
-      <p class="d">拿 spec 逐条审代码，对话里直接给差距清单：哪条没做到 + file:line + 该补什么。</p>
+      <p class="d">拿 spec 逐条审代码，把判定回写进 spec（pass/fail 徽标 + 覆盖率条），同时对话里给差距清单：哪条没做到 + file:line + 该补什么。</p>
       <span class="go">看说明 →</span>
     </a>
   </div>

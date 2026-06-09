@@ -73,3 +73,41 @@ test('render-spec CLI allows open decisions only with explicit --allow-open', ()
   execFileSync('node', ['lib/cli/render-spec-main.mjs', p, out, '--allow-open'], { stdio: 'pipe' });
   assert.ok(readFileSync(out, 'utf8').includes('id="specforge-data"'));
 });
+
+test('annotate CLI writes verdicts back into a self-produced spec.html', () => {
+  // 先渲染一个 specforge-draft 自产 spec.html
+  const specPath = join(dir, 'ann-spec.json');
+  const htmlPath = join(dir, 'ann.spec.html');
+  writeFileSync(specPath, JSON.stringify(spec));
+  execFileSync('node', ['lib/cli/render-spec-main.mjs', specPath, htmlPath]);
+  // 判定 AC-1 fail，写回
+  const vPath = join(dir, 'verdicts.json');
+  writeFileSync(vPath, JSON.stringify([
+    { criterionId: 'AC-1', status: 'fail', verificationMode: 'static_review', confidence: 'low', evidence: [], missingEvidenceReason: '未实现', explanation: '缺失' }
+  ]));
+  execFileSync('node', ['lib/cli/annotate-main.mjs', htmlPath, vPath], { stdio: 'pipe' });
+  const html = readFileSync(htmlPath, 'utf8');
+  assert.ok(html.includes('vstat'), '写回后含状态徽标');
+  assert.ok(html.includes('v-fail'), 'fail AC 样式注入');
+  assert.ok(html.includes('"verifiedAt"'), 'verifiedAt 落入数据岛');
+  // 写回后仍是合法可再抽取的 spec
+  const out = execFileSync('node', ['lib/cli/extract-main.mjs', htmlPath], { encoding: 'utf8' });
+  assert.equal(JSON.parse(out).verdicts.length, 1);
+});
+
+test('annotate CLI refuses to write back into a non-self-produced spec (exit 3)', () => {
+  const foreign = { ...spec, generator: 'echo-spec/1.0.0' };
+  const specPath = join(dir, 'foreign.json');
+  const htmlPath = join(dir, 'foreign.spec.html');
+  // 直接用 render 造一个 echo-spec 数据岛（render 不校验 generator 前缀）
+  writeFileSync(specPath, JSON.stringify(foreign));
+  execFileSync('node', ['lib/cli/render-spec-main.mjs', specPath, htmlPath]);
+  const vPath = join(dir, 'fv.json');
+  writeFileSync(vPath, JSON.stringify([{ criterionId: 'AC-1', status: 'pass', verificationMode: 'static_review', confidence: 'high', evidence: [{ file: 'a', line: 1 }], missingEvidenceReason: null, explanation: 'e' }]));
+  let err;
+  try {
+    execFileSync('node', ['lib/cli/annotate-main.mjs', htmlPath, vPath], { stdio: 'pipe' });
+  } catch (e) { err = e; }
+  assert.ok(err, '外部 generator 应非 0 退出');
+  assert.equal(err.status, 3);
+});

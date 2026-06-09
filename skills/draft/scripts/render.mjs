@@ -6681,7 +6681,37 @@ var spec_schema_default = {
           severity: { enum: ["info", "warning"] }
         }
       }
-    }
+    },
+    verdicts: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["criterionId", "status", "verificationMode", "confidence", "evidence", "explanation"],
+        properties: {
+          criterionId: { type: "string", pattern: "^AC-[0-9]+$" },
+          status: { enum: ["pass", "partial", "fail", "na"] },
+          verificationMode: { enum: ["static_review", "test", "runtime", "manual_required"] },
+          confidence: { enum: ["high", "medium", "low"] },
+          evidence: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              required: ["file", "line"],
+              properties: {
+                file: { type: "string" },
+                line: { type: "integer", minimum: 1 },
+                note: { type: "string" }
+              }
+            }
+          },
+          missingEvidenceReason: { type: ["string", "null"] },
+          explanation: { type: "string" }
+        }
+      }
+    },
+    verifiedAt: { type: ["string", "null"] }
   }
 };
 
@@ -6696,6 +6726,17 @@ function validateSpec(obj) {
   }
   const ids = obj.criteria.map((c) => c.id);
   if (new Set(ids).size !== ids.length) errors2.push("criteria[].id must be unique");
+  if (Array.isArray(obj.verdicts)) {
+    const seen = /* @__PURE__ */ new Set();
+    for (const v of obj.verdicts) {
+      if (!ids.includes(v.criterionId)) errors2.push(`verdict references unknown criterionId ${v.criterionId}`);
+      if (seen.has(v.criterionId)) errors2.push(`duplicate verdict for ${v.criterionId}`);
+      seen.add(v.criterionId);
+      if (v.status === "pass" && (!v.evidence || v.evidence.length === 0)) {
+        errors2.push(`verdict ${v.criterionId} has status pass but no evidence`);
+      }
+    }
+  }
   return { ok: errors2.length === 0, errors: errors2 };
 }
 
@@ -6948,7 +6989,7 @@ function renderSpecHtml(spec2) {
     renderDecisions(openDecisions),
     renderAwareness(awareness),
     ...openSections.map(renderOpenSection),
-    renderFoldZone(spec2.summary, foldSections, criteria, decidedDecisions)
+    renderFoldZone(spec2.summary, foldSections, criteria, decidedDecisions, spec2.verdicts || [])
   ].filter(Boolean).join("\n");
   return page(spec2.meta.title, renderNav(spec2, openSections, foldSections, openDecisions, awareness, criteria, decidedDecisions), body, spec2);
 }
@@ -6960,7 +7001,18 @@ function mastMeta(spec2, decisions, awareness, criteria) {
   if (decisions.length) parts.push(`<span>${decisions.length} \u51B3\u7B56${open2 ? ` \xB7 <b class="open-n">${open2} \u5F85\u62CD\u677F</b>` : ""}</span>`);
   if (awareness.length) parts.push(`<span>${awareness.length} \u77E5\u60C5</span>`);
   parts.push(`<span>${criteria.length} \u9A8C\u6536\u70B9</span>`);
+  const verdicts = spec2.verdicts || [];
+  if (verdicts.length) {
+    const counts = verdictCounts(criteria, verdicts);
+    parts.push(`<span class="cov-sum">\u5DF2\u9A8C \xB7 <b class="cv pass">${counts.pass}\u2713</b> <b class="cv partial">${counts.partial}~</b> <b class="cv fail">${counts.fail}\u2717</b>${counts.na ? ` <b class="cv na">${counts.na} na</b>` : ""}</span>`);
+  }
   return parts.join('<span class="dot">\xB7</span>');
+}
+function verdictCounts(criteria, verdicts) {
+  const byId = new Map(verdicts.map((v) => [v.criterionId, v]));
+  const counts = { pass: 0, partial: 0, fail: 0, na: 0 };
+  for (const c of criteria) counts[(byId.get(c.id) || {}).status || "na"]++;
+  return counts;
 }
 function decorate(safe) {
   return safe.replace(/([A-Za-z_][\w]*\.(?:dart|mjs|js|ts|json)(?::\d+(?:-\d+)?)?|[a-z][a-z0-9]*(?:_[a-z0-9]+)+)/g, "<code>$1</code>").replace(/(?<![\w>])(\d+\s*\/\s*\d+)(?![\w<])/g, '<b class="num">$1</b>').replace(/(¥\d[\d.]*\s*起?)/g, '<b class="amt">$1</b>').replace(/(已匹配满|已匹配)/g, '<span class="st st-ok">$1</span>').replace(/(暂无在售|未匹配)/g, '<span class="st st-na">$1</span>').replace(/(部分匹配)/g, '<span class="st st-mid">$1</span>');
@@ -7007,7 +7059,7 @@ function renderInner(s) {
 function renderOpenSection({ s, n }) {
   return `<section id="${escHtml(s.id)}" class="card"><h2><span class="card-n">${pad(n)}</span>${escHtml(s.title)}</h2>${renderInner(s)}</section>`;
 }
-function renderFoldZone(summary, foldSections, criteria, decidedDecisions = []) {
+function renderFoldZone(summary, foldSections, criteria, decidedDecisions = [], verdicts = []) {
   const folds = [];
   if (summary) {
     folds.push(detail("summary", "\u6982\u8FF0", `<p>${enrich(summary)}</p>`));
@@ -7024,23 +7076,48 @@ function renderFoldZone(summary, foldSections, criteria, decidedDecisions = []) 
     folds.push(detail(escHtml(s.id), escHtml(s.title), renderInner(s)));
   }
   if (criteria.length) {
-    folds.push(detail("criteria", `\u9A8C\u6536\u70B9 <span class="fold-n">${criteria.length}</span>`, criteriaInner(criteria), "criteria"));
+    const verified = verdicts.length > 0;
+    const label = `\u9A8C\u6536\u70B9 <span class="fold-n">${criteria.length}</span>${verified ? ' <span class="fold-badge">\u5DF2\u9A8C</span>' : ""}`;
+    folds.push(detail("criteria", label, criteriaInner(criteria, verdicts), "criteria", verified));
   }
   if (!folds.length) return "";
   return `<section class="folds" id="details"><p class="folds-label">\u7EC6\u8282\uFF08\u9ED8\u8BA4\u6298\u53E0\uFF0C\u6309\u9700\u5C55\u5F00\uFF09</p>${folds.join("")}</section>`;
 }
-function detail(id, label, inner, extra = "") {
-  return `<details class="fold ${extra}" id="${id}"><summary>${label}</summary><div class="fold-body">${inner}</div></details>`;
+function detail(id, label, inner, extra = "", open2 = false) {
+  return `<details class="fold ${extra}"${open2 ? " open" : ""} id="${id}"><summary>${label}</summary><div class="fold-body">${inner}</div></details>`;
 }
-function criteriaInner(criteria) {
+function criteriaInner(criteria, verdicts = []) {
   const counts = { must: 0, should: 0, could: 0 };
   for (const c of criteria) if (counts[c.priority] != null) counts[c.priority]++;
   const legend = ["must", "should", "could"].map((p) => `<span class="legend-chip"><span class="swatch ${p}"></span>${p} <b>${counts[p]}</b></span>`).join("");
+  const byId = new Map(verdicts.map((v) => [v.criterionId, v]));
+  const verified = verdicts.length > 0;
+  const cov = verified ? coverageBar(criteria, verdicts) : "";
   const items = criteria.map((c) => {
     const why = c.rationale ? `<p class="why"><span>\u4F9D\u636E</span>${enrich(c.rationale)}</p>` : "";
-    return `<li class="ac ${escHtml(c.priority)}" id="${escHtml(c.id)}" data-id="${escHtml(c.id)}"><div class="ac-h"><strong class="ac-id">${escHtml(c.id)}</strong><span class="pri ${escHtml(c.priority)}">${escHtml(c.priority)}</span></div><p class="ac-t">${enrich(c.text)}</p>${why}</li>`;
+    const v = byId.get(c.id);
+    const status = verified ? v ? v.status : "na" : "";
+    const vcls = verified ? ` v-${status}` : "";
+    const vbadge = verified ? `<span class="vstat ${status}">${escHtml(status)}</span>` : "";
+    const vbody = verified ? renderVerdict(v) : "";
+    return `<li class="ac ${escHtml(c.priority)}${vcls}" id="${escHtml(c.id)}" data-id="${escHtml(c.id)}"><div class="ac-h"><strong class="ac-id">${escHtml(c.id)}</strong>${vbadge}<span class="pri ${escHtml(c.priority)}">${escHtml(c.priority)}</span></div><p class="ac-t">${enrich(c.text)}</p>${why}${vbody}</li>`;
   }).join("");
-  return `<div class="ac-legend">${legend}</div><ul class="ac-list">${items}</ul>`;
+  return `<div class="ac-legend">${legend}</div>${cov}<ul class="ac-list">${items}</ul>`;
+}
+function coverageBar(criteria, verdicts) {
+  const counts = verdictCounts(criteria, verdicts);
+  const total = criteria.length || 1;
+  const onlyStatic = verdicts.length > 0 && verdicts.every((v) => v.verificationMode === "static_review");
+  const bar = ["pass", "partial", "fail", "na"].map((k) => `<i class="${k}" style="width:${(counts[k] / total * 100).toFixed(2)}%"></i>`).join("");
+  const dash = ["pass", "partial", "fail", "na"].map((k) => `<span class="chip ${k}"><span class="chip-n">${counts[k]}</span><span class="chip-l">${k}</span></span>`).join("");
+  const banner = onlyStatic ? '<div class="banner"><span class="b-ic">\u26A0\uFE0F</span><span>\u672A\u8FD0\u884C\u6D4B\u8BD5\uFF1A\u4EE5\u4E0B\u7ED3\u8BBA\u5747\u4E3A\u9759\u6001\u5BA1\u67E5\uFF08static review\uFF09\uFF0C\u975E\u771F\u5B9E\u6267\u884C\u9A8C\u8BC1\u3002</span></div>' : "";
+  return `<div class="cov"><div class="cov-bar">${bar}</div><div class="dash">${dash}</div>${banner}</div>`;
+}
+function renderVerdict(v) {
+  if (!v) return `<div class="ac-v"><p class="v-exp">\u672A\u7ED9\u51FA\u5224\u5B9A\uFF08\u89C6\u4E3A na\uFF09</p></div>`;
+  const ev = v.evidence && v.evidence.length ? v.evidence.map((e) => `<div class="ev"><span><b>${escHtml(e.file)}</b>:${escHtml(e.line)}${e.note ? " \u2014 " + enrich(e.note) : ""}</span></div>`).join("") : `<div class="ev miss"><span>${enrich(v.missingEvidenceReason || "\u672A\u5B9A\u4F4D\u5230\u843D\u5730\u5185\u5BB9")}</span></div>`;
+  const meta = `<div class="v-meta"><span>mode=<b>${escHtml(v.verificationMode)}</b></span><span>confidence=<b>${escHtml(v.confidence)}</b></span></div>`;
+  return `<div class="ac-v">${meta}${ev}<p class="v-exp">${enrich(v.explanation)}</p></div>`;
 }
 function renderNav(spec2, openSections, foldSections, openDecisions, awareness, criteria, decidedDecisions = []) {
   const links = [];

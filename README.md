@@ -8,14 +8,14 @@
 更轻的「定义需求 → 验证实现」闭环，做成两个 skill：
 
 - **`specforge-draft`** —— 把一个模糊 idea，经访谈 + 拷问，变成一份**单文件可视化的 `*.spec.html`**，让你用最小成本看懂「AI 要做什么」并拍板。
-- **`specforge-verify`** —— 拿着这份 spec.html 逐条比对你的代码，**在对话里直接给出差距清单**：哪条验收点没做到、证据在哪个 `file:line`、该补什么——看完顺手就修。
+- **`specforge-verify`** —— 拿着这份 spec.html 逐条比对你的代码，**双出口**：把判定**回写进 spec.html**（每条 AC 标上 pass/partial/fail/na + `file:line` 证据 + 覆盖率条），同时在对话里给差距清单——看完顺手就修。
 
-spec 不再是一坨 markdown，而是**人一眼能读、机器也能消费**的 HTML 产物；写完代码还能回头验证实现是否真的对齐 spec。
+spec 不再是一坨 markdown，而是**人一眼能读、机器也能消费**的 HTML 产物；verify 后它还会变成「需求 + 验收状态」的活文档，后续打开就知道哪条做了哪条没做。
 
 <p align="center">
   <a href="https://wangliquan.github.io/specforge/showcase.html"><img src="assets/spec-showcase.png" width="72%" alt="spec.html 示例：目标 / 主流程 / 待拍板决策 / 带编号的验收点清单"></a>
 </p>
-<p align="center"><sub><code>draft</code> 产出的 <code>spec.html</code>　·　点图看在线示例　·　<code>verify</code> 不产文件，逐条验后在对话里给差距清单</sub></p>
+<p align="center"><sub><code>draft</code> 产出的 <code>spec.html</code>　·　点图看在线示例　·　<code>verify</code> 把判定回写进同一份 spec，并在对话里给差距清单</sub></p>
 
 ---
 
@@ -109,7 +109,7 @@ npx skills update specforge-draft specforge-verify   # 只更新这两个
 
 > 「对照 `xxx.spec.html` 检查代码」 / 「verify against spec」
 
-它会**把 spec.html 当不可信文本读取**（绝不执行它），抽出验收点清单，逐条审你的代码，然后**在对话里给出差距清单**：哪条没做到、证据 `file:line`、该补什么——不产任何文件，看完顺手就修。
+它会**把 spec.html 当不可信文本读取**（绝不执行它），抽出验收点清单，逐条审你的代码，然后**双出口**：把每条判定**回写进源 spec.html**（标上 pass/partial/fail/na 徽标 + `file:line` 证据 + 顶部覆盖率条），同时在对话里给差距清单——看完顺手就修。（回写仅限 specforge-draft 自产的 spec；外部 spec 转纯对话清单。）
 
 ### 一个完整例子
 
@@ -119,12 +119,12 @@ draft：（访谈+拷问几轮）→ 生成 specs/2026-06-03-blog-dark-mode.spec
 你：（打开 HTML，确认 4 条验收点 AC-1..AC-4，OK）
 你：（写代码：加切换按钮、切 class、写 localStorage…）
 你：对照 specs/2026-06-03-blog-dark-mode.spec.html 检查代码
-verify：→ 对话里给出差距清单
+verify：→ 回写进 spec.html（AC-3 标红 fail + 覆盖率条）+ 对话差距清单
         覆盖率：pass 2 · partial 0 · fail 1 · na 1
         AC-3 [fail] 刷新后保留上次选择 —— 未见 localStorage 写入（验 src/theme.js:12）
 ```
 
-一眼就知道还差哪一条，去补 `localStorage`。
+一眼就知道还差哪一条，去补 `localStorage`；再打开 spec.html 就能看到 AC-3 已转绿。
 
 ---
 
@@ -136,11 +136,11 @@ verify：→ 对话里给出差距清单
 - 内嵌一段 `<script type="application/json">` **数据岛**作为契约——这就是 verify 后续要逐条验的验收点清单；
 - 生成时就把视图烤成静态 HTML、**无渲染期脚本**、CSP 严格，因此安全、可随手转发。
 
-**verify 的差距清单（对话输出，无文件）**
+**verify 的双出口**
 
-- 顶部一行**覆盖率**（pass / partial / fail / na）；若结论都来自静态审查（没跑测试），会点明「未运行测试」，免得误读成"验证通过"；
-- 重点列 `fail` / `partial`：每条差在哪 + `file:line` 证据 + 该补什么；定位不到落地内容绝不判 pass；
-- 不产任何文件、不当 fixer——差距给到你，修复交常规编辑能力，改完可再验一遍看差距是否清零。
+- **回写进源 spec.html**：每条 AC 标上 pass/partial/fail/na 徽标 + `file:line` 证据，顶部加覆盖率条，写入 `verifiedAt`——spec 从「需求」升级成「需求 + 验收状态」活文档，后续打开一眼看清哪条做了哪条没做（仅限 specforge-draft 自产 spec；外部 spec 转纯对话清单，不碰其文件）；
+- **对话差距清单**：顶部一行覆盖率（pass / partial / fail / na），若结论都来自静态审查（没跑测试）会点明「未运行测试」，免得误读成"验证通过"；重点列 `fail` / `partial`，每条差在哪 + `file:line` 证据 + 该补什么；定位不到落地内容绝不判 pass；
+- **不当 fixer**——回写改的是 spec 自身，不动被验代码；修复交常规编辑能力，改完可再验一遍重新回写覆盖旧判定。
 
 ---
 

@@ -76,3 +76,20 @@ test('rejects awareness missing text', () => {
   bad.awareness = [{ id: 'A-1', severity: 'info' }];
   assert.equal(validate(bad), false);
 });
+
+test('accepts spec carrying verdicts + verifiedAt', () => {
+  const ok = structuredClone(validSpec);
+  ok.verdicts = [{
+    criterionId: 'AC-1', status: 'pass', verificationMode: 'static_review',
+    confidence: 'high', evidence: [{ file: 'src/x.ts', line: 42, note: 'n' }],
+    missingEvidenceReason: null, explanation: 'e'
+  }];
+  ok.verifiedAt = '2026-06-09T00:00:00.000Z';
+  assert.ok(validate(ok), JSON.stringify(validate.errors));
+});
+
+test('rejects evidence line <= 0', () => {
+  const bad = structuredClone(validSpec);
+  bad.verdicts = [{ criterionId: 'AC-1', status: 'fail', verificationMode: 'static_review', confidence: 'low', evidence: [{ file: 'a', line: 0 }], missingEvidenceReason: 'x', explanation: 'e' }];
+  assert.equal(validate(bad), false);
+});

@@ -101,6 +101,34 @@
           "severity": { "enum": ["info", "warning"] }
         }
       }
-    }
+    },
+    "verdicts": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["criterionId", "status", "verificationMode", "confidence", "evidence", "explanation"],
+        "properties": {
+          "criterionId": { "type": "string", "pattern": "^AC-[0-9]+$" },
+          "status": { "enum": ["pass", "partial", "fail", "na"] },
+          "verificationMode": { "enum": ["static_review", "test", "runtime", "manual_required"] },
+          "confidence": { "enum": ["high", "medium", "low"] },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object", "additionalProperties": false,
+              "required": ["file", "line"],
+              "properties": {
+                "file": { "type": "string" },
+                "line": { "type": "integer", "minimum": 1 },
+                "note": { "type": "string" }
+              }
+            }
+          },
+          "missingEvidenceReason": { "type": ["string", "null"] },
+          "explanation": { "type": "string" }
+        }
+      }
+    },
+    "verifiedAt": { "type": ["string", "null"] }
   }
 }

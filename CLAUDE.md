@@ -1,6 +1,6 @@
 # SpecForge
 
-两个 skill：`specforge-draft`（把模糊需求拷问成可视化 `*.spec.html`）+ `specforge-verify`（拿 spec 逐条验落地产物，**在对话里给出差距清单**，不产任何文件、不当 fixer，修复交常规编辑）。定位是「任何要想清楚、定下来、再回头验收的事」，代码只是最常见的产物——不是前提（详见两个 SKILL.md 的 description）。
+两个 skill：`specforge-draft`（把模糊需求拷问成可视化 `*.spec.html`）+ `specforge-verify`（拿 spec 逐条验落地产物，**双出口**：把判定回写进自产 spec.html + 在对话里给差距清单，不当 fixer，修复交常规编辑）。定位是「任何要想清楚、定下来、再回头验收的事」，代码只是最常见的产物——不是前提（详见两个 SKILL.md 的 description）。
 
 ## 源 vs 派生产物（红线）
 
@@ -12,7 +12,9 @@
 ## 关键契约
 
 - spec.html 数据岛 DOM id = `specforge-data`（draft 注入、verify 抽取的唯一契约）。改动它须同步：`lib/render-spec.mjs` 注入、`lib/extract.mjs` 正则、`showcase.html`、`test/*` 断言。
-- verify 侧只读不写：`lib/cli/extract-main.mjs` 跑 `extractDataIsland`+`validateSpec` 把 spec JSON 打到 stdout 给 agent 逐条判定，**不生成任何文件**（无 report.html / verdicts.json）。judge 与 fixer 分离是红线——verify 不改产物。
+- verify 两条 CLI：`extract-main.mjs` 抽 spec JSON 给 agent 逐条判定；`annotate-main.mjs` 把 verdicts 合并进 spec 并**原地重渲染** spec.html（注入徽标/覆盖率条 + `verifiedAt`）。`render-spec.mjs` 是双模式：无 verdicts 出素 spec，有 verdicts 注入验收态。
+- **回写边界**：annotate 只写回 `generator` 为 `specforge-draft*` 自产 spec，外部 generator（如 echo-spec）`exit 3` 拒绝。`schema/spec.schema.json` 的 `verdicts`/`verifiedAt` 是可选字段（素 spec 无此字段）。
+- **judge/fixer 分离红线**：verify 回写改的是 **spec 自身**（需求的验收态），绝不改被验产物（代码/文档/配置）——运动员不当裁判。
 
 ## 校验
 

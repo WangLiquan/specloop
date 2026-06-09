@@ -30,10 +30,29 @@ test('surfaces schema errors (bad enum)', () => {
   assert.ok(r.errors.length > 0);
 });
 
-test('rejects unknown top-level properties like the removed verdicts/report', () => {
+test('accepts valid verdicts + verifiedAt', () => {
+  const ok = structuredClone(good);
+  ok.verdicts = [{
+    criterionId: 'AC-1', status: 'pass', verificationMode: 'static_review',
+    confidence: 'high', evidence: [{ file: 'src/x.ts', line: 42 }],
+    missingEvidenceReason: null, explanation: 'e'
+  }];
+  ok.verifiedAt = '2026-06-09T00:00:00.000Z';
+  assert.deepEqual(validateSpec(ok), { ok: true, errors: [] });
+});
+
+test('rejects verdict referencing unknown criterion', () => {
   const bad = structuredClone(good);
-  bad.verdicts = [{ criterionId: 'AC-1', status: 'pass' }];
+  bad.verdicts = [{ criterionId: 'AC-9', status: 'fail', verificationMode: 'static_review', confidence: 'low', evidence: [], missingEvidenceReason: 'x', explanation: 'e' }];
   const r = validateSpec(bad);
   assert.equal(r.ok, false);
-  assert.ok(r.errors.some(e => /additional propert/i.test(e)));
+  assert.ok(r.errors.some(e => /unknown criterionId/i.test(e)));
+});
+
+test('rejects pass verdict with empty evidence', () => {
+  const bad = structuredClone(good);
+  bad.verdicts = [{ criterionId: 'AC-1', status: 'pass', verificationMode: 'static_review', confidence: 'high', evidence: [], missingEvidenceReason: null, explanation: 'e' }];
+  const r = validateSpec(bad);
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some(e => /pass.*no evidence/i.test(e)));
 });

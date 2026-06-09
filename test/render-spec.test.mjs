@@ -52,3 +52,31 @@ test('decisions/awareness render at top; criteria folds into <details>', () => {
   const scripts = html.match(/<script\b[^>]*>/gi) || [];
   assert.equal(scripts.length, 1);
 });
+
+test('without verdicts renders plain spec (no verification chrome)', () => {
+  const html = renderSpecHtml(spec);
+  assert.ok(!html.includes('vstat'), 'no verdict status badge');
+  assert.ok(!html.includes('cov-bar'), 'no coverage bar');
+});
+
+test('with verdicts injects coverage bar, status badges and evidence', () => {
+  const s = structuredClone(spec);
+  s.criteria = [
+    { id: 'AC-1', text: 'do x', priority: 'must' },
+    { id: 'AC-2', text: 'do y', priority: 'should' }
+  ];
+  s.verdicts = [
+    { criterionId: 'AC-1', status: 'pass', verificationMode: 'static_review', confidence: 'high', evidence: [{ file: 'src/x.ts', line: 42 }], missingEvidenceReason: null, explanation: '已实现' },
+    { criterionId: 'AC-2', status: 'fail', verificationMode: 'static_review', confidence: 'low', evidence: [], missingEvidenceReason: '未找到实现', explanation: '缺失' }
+  ];
+  s.verifiedAt = '2026-06-09T00:00:00.000Z';
+  const html = renderSpecHtml(s);
+  assert.ok(html.includes('cov-bar'), 'coverage bar present');
+  assert.ok(html.includes('v-pass'), 'pass AC styled');
+  assert.ok(html.includes('v-fail'), 'fail AC styled');
+  assert.ok(html.includes('vstat'), 'status badge present');
+  assert.ok(html.includes('src/x.ts'), 'evidence file shown');
+  assert.ok(html.includes('未找到实现'), 'missingEvidenceReason shown');
+  // verdicts/verifiedAt 在数据岛里完整 round-trip
+  assert.ok(html.includes('"verifiedAt"'), 'verifiedAt in island');
+});
