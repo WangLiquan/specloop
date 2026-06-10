@@ -129,6 +129,30 @@
         }
       }
     },
-    "verifiedAt": { "type": ["string", "null"] }
+    "verifiedAt": { "type": ["string", "null"] },
+    "assumptionReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applicable", "reason"],
+      "properties": {
+        "applicable": { "type": "boolean" },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "claim", "evidence", "verified", "verifiedDigest"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^ASM-[0-9]+$" },
+          "claim": { "type": "string", "minLength": 1 },
+          "evidence": { "type": "string", "minLength": 1 },
+          "verified": { "type": ["boolean", "null"] },
+          "verifiedDigest": { "type": ["string", "null"] },
+          "note": { "type": "string" }
+        }
+      }
+    }
   }
 }

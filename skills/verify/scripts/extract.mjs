@@ -6725,13 +6725,39 @@ var spec_schema_default = {
         }
       }
     },
-    verifiedAt: { type: ["string", "null"] }
+    verifiedAt: { type: ["string", "null"] },
+    assumptionReview: {
+      type: "object",
+      additionalProperties: false,
+      required: ["applicable", "reason"],
+      properties: {
+        applicable: { type: "boolean" },
+        reason: { type: "string", minLength: 1 }
+      }
+    },
+    assumptions: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "claim", "evidence", "verified", "verifiedDigest"],
+        properties: {
+          id: { type: "string", pattern: "^ASM-[0-9]+$" },
+          claim: { type: "string", minLength: 1 },
+          evidence: { type: "string", minLength: 1 },
+          verified: { type: ["boolean", "null"] },
+          verifiedDigest: { type: ["string", "null"] },
+          note: { type: "string" }
+        }
+      }
+    }
   }
 };
 
 // lib/validate.mjs
 var ajv = new import_ajv.default({ allErrors: true });
 var validateSchema = ajv.compile(spec_schema_default);
+var isBlank = (s) => typeof s === "string" && s.trim() === "";
 function validateSpec(obj) {
   const errors2 = [];
   if (!validateSchema(obj)) {
@@ -6740,6 +6766,17 @@ function validateSpec(obj) {
   }
   const ids = obj.criteria.map((c) => c.id);
   if (new Set(ids).size !== ids.length) errors2.push("criteria[].id must be unique");
+  if (Array.isArray(obj.assumptions)) {
+    const aids = obj.assumptions.map((a) => a.id);
+    if (new Set(aids).size !== aids.length) errors2.push("assumptions[].id must be unique");
+    for (const a of obj.assumptions) {
+      if (isBlank(a.claim)) errors2.push(`assumption ${a.id} has blank claim`);
+      if (isBlank(a.evidence)) errors2.push(`assumption ${a.id} has blank evidence`);
+    }
+  }
+  if (obj.assumptionReview && isBlank(obj.assumptionReview.reason)) {
+    errors2.push("assumptionReview.reason must not be blank");
+  }
   if (Array.isArray(obj.verdicts)) {
     const seen = /* @__PURE__ */ new Set();
     for (const v of obj.verdicts) {

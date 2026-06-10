@@ -56,3 +56,51 @@ test('rejects pass verdict with empty evidence', () => {
   assert.equal(r.ok, false);
   assert.ok(r.errors.some(e => /pass.*no evidence/i.test(e)));
 });
+
+const withAsm = {
+  ...good,
+  assumptionReview: { applicable: true, reason: '涉及现有代码' },
+  assumptions: [
+    { id: 'ASM-1', claim: '复用 foo', evidence: 'lib/foo.mjs:10', verified: null, verifiedDigest: null },
+    { id: 'ASM-2', claim: 'bar 返回空串', evidence: 'lib/bar.mjs:5', verified: true, verifiedDigest: 'abc' }
+  ]
+};
+
+test('accepts a valid spec with assumptions', () => {
+  assert.deepEqual(validateSpec(withAsm), { ok: true, errors: [] });
+});
+
+test('rejects duplicate assumption ids', () => {
+  const bad = structuredClone(withAsm);
+  bad.assumptions[1].id = 'ASM-1';
+  const r = validateSpec(bad);
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some(e => /assumptions\[\]\.id must be unique/.test(e)));
+});
+
+test('rejects blank claim / evidence (schema minLength cannot catch whitespace)', () => {
+  const bad = structuredClone(withAsm);
+  bad.assumptions[0].evidence = '   ';
+  const r = validateSpec(bad);
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some(e => /blank evidence/.test(e)));
+});
+
+test('rejects blank assumptionReview.reason', () => {
+  const bad = structuredClone(withAsm);
+  bad.assumptionReview.reason = '  ';
+  const r = validateSpec(bad);
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some(e => /reason must not be blank/.test(e)));
+});
+
+test('rejects bad assumption id pattern', () => {
+  const bad = structuredClone(withAsm);
+  bad.assumptions[0].id = 'A-1';
+  const r = validateSpec(bad);
+  assert.equal(r.ok, false);
+});
+
+test('back-compat: spec without assumptions/assumptionReview still valid', () => {
+  assert.deepEqual(validateSpec(good), { ok: true, errors: [] });
+});

@@ -7,6 +7,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const check = process.argv.includes('--check');
 const jobs = [
   { in: 'lib/cli/render-spec-main.mjs', out: 'skills/draft/scripts/render.mjs' },
+  { in: 'lib/cli/check-ready-main.mjs', out: 'skills/draft/scripts/check-ready.mjs' },
+  { in: 'lib/cli/annotate-assumptions-main.mjs', out: 'skills/draft/scripts/annotate-assumptions.mjs' },
   { in: 'lib/cli/extract-main.mjs', out: 'skills/verify/scripts/extract.mjs' },
   { in: 'lib/cli/annotate-main.mjs', out: 'skills/verify/scripts/annotate.mjs' }
 ];

@@ -6725,13 +6725,39 @@ var spec_schema_default = {
         }
       }
     },
-    verifiedAt: { type: ["string", "null"] }
+    verifiedAt: { type: ["string", "null"] },
+    assumptionReview: {
+      type: "object",
+      additionalProperties: false,
+      required: ["applicable", "reason"],
+      properties: {
+        applicable: { type: "boolean" },
+        reason: { type: "string", minLength: 1 }
+      }
+    },
+    assumptions: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "claim", "evidence", "verified", "verifiedDigest"],
+        properties: {
+          id: { type: "string", pattern: "^ASM-[0-9]+$" },
+          claim: { type: "string", minLength: 1 },
+          evidence: { type: "string", minLength: 1 },
+          verified: { type: ["boolean", "null"] },
+          verifiedDigest: { type: ["string", "null"] },
+          note: { type: "string" }
+        }
+      }
+    }
   }
 };
 
 // lib/validate.mjs
 var ajv = new import_ajv.default({ allErrors: true });
 var validateSchema = ajv.compile(spec_schema_default);
+var isBlank = (s) => typeof s === "string" && s.trim() === "";
 function validateSpec(obj) {
   const errors2 = [];
   if (!validateSchema(obj)) {
@@ -6740,6 +6766,17 @@ function validateSpec(obj) {
   }
   const ids = obj.criteria.map((c) => c.id);
   if (new Set(ids).size !== ids.length) errors2.push("criteria[].id must be unique");
+  if (Array.isArray(obj.assumptions)) {
+    const aids = obj.assumptions.map((a) => a.id);
+    if (new Set(aids).size !== aids.length) errors2.push("assumptions[].id must be unique");
+    for (const a of obj.assumptions) {
+      if (isBlank(a.claim)) errors2.push(`assumption ${a.id} has blank claim`);
+      if (isBlank(a.evidence)) errors2.push(`assumption ${a.id} has blank evidence`);
+    }
+  }
+  if (obj.assumptionReview && isBlank(obj.assumptionReview.reason)) {
+    errors2.push("assumptionReview.reason must not be blank");
+  }
   if (Array.isArray(obj.verdicts)) {
     const seen = /* @__PURE__ */ new Set();
     for (const v of obj.verdicts) {
@@ -6932,6 +6969,16 @@ tr:not(.thead) td:first-child{font-family:var(--mono);font-size:.88rem;color:var
 .decision .why{margin:9px 0 0;font-size:.85rem;color:var(--mut);line-height:1.55}
 .decision .why span{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;
   color:var(--faint);margin-right:9px}
+.decision.asm-ok{border-left-color:var(--ok)}
+.decision.asm-no{border-left-color:var(--fail);background:linear-gradient(90deg,var(--fail-bg),var(--raised) 55%)}
+.asm-badge{font-family:var(--mono);font-size:.64rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 9px;border-radius:20px}
+.asm-badge.ok{background:var(--ok);color:#fff}
+.asm-badge.no{background:var(--fail);color:#fff}
+.asm-badge.pending{color:var(--mut);border:1px solid var(--line);background:var(--surface)}
+.asm-ev{margin:8px 0 0;font-size:.92rem;color:var(--fg);line-height:1.5}
+.asm-ev>span{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--faint);margin-right:9px}
 
 .aware{display:flex;gap:11px;align-items:flex-start;background:var(--raised);border:1px solid var(--line);
   border-radius:11px;padding:12px 15px;margin:10px 0;scroll-margin-top:24px}
@@ -6982,12 +7029,22 @@ details.fold[open]>summary{border-bottom:1px solid var(--line)}
 }
 `.trim();
 
+// lib/digest.mjs
+import { createHash } from "node:crypto";
+function digest(claim, evidence) {
+  return createHash("sha256").update(JSON.stringify([claim, evidence]), "utf8").digest("hex");
+}
+function effectiveVerified(a) {
+  return a.verifiedDigest === digest(a.claim, a.evidence) ? a.verified : null;
+}
+
 // lib/render-spec.mjs
 function renderSpecHtml(spec2) {
   const decisions = spec2.decisions || [];
   const awareness = spec2.awareness || [];
   const sections = spec2.sections || [];
   const criteria = spec2.criteria || [];
+  const assumptions = spec2.assumptions || [];
   const openDecisions = decisions.filter((d) => d.status === "open");
   const decidedDecisions = decisions.filter((d) => d.status !== "open");
   const isCollapsed = (s) => s.collapsed != null ? s.collapsed : s.type !== "flow";
@@ -7001,6 +7058,7 @@ function renderSpecHtml(spec2) {
     `<p class="mast-meta">${mastMeta(spec2, decisions, awareness, criteria)}</p>`,
     `</header>`,
     renderDecisions(openDecisions),
+    renderAssumptions(assumptions),
     renderAwareness(awareness),
     ...openSections.map(renderOpenSection),
     renderFoldZone(spec2.summary, foldSections, criteria, decidedDecisions, spec2.verdicts || [])
@@ -7015,6 +7073,11 @@ function mastMeta(spec2, decisions, awareness, criteria) {
   if (decisions.length) parts.push(`<span>${decisions.length} \u51B3\u7B56${open ? ` \xB7 <b class="open-n">${open} \u5F85\u62CD\u677F</b>` : ""}</span>`);
   if (awareness.length) parts.push(`<span>${awareness.length} \u77E5\u60C5</span>`);
   parts.push(`<span>${criteria.length} \u9A8C\u6536\u70B9</span>`);
+  const assumptions = spec2.assumptions || [];
+  if (assumptions.length) {
+    const c = assumptionCounts(assumptions);
+    parts.push(`<span class="cov-sum">\u73B0\u72B6\u5047\u8BBE \xB7 <b class="cv pass">${c.ok}\u2713</b> <b class="cv fail">${c.no}\u2717</b>${c.pending ? ` <b class="cv na">${c.pending} \u672A\u6838</b>` : ""}</span>`);
+  }
   const verdicts2 = spec2.verdicts || [];
   if (verdicts2.length) {
     const counts = verdictCounts(criteria, verdicts2);
@@ -7046,6 +7109,25 @@ function decisionCard(d) {
   const opts = Array.isArray(d.options) && d.options.length ? `<ul class="d-opts">${d.options.map((o) => `<li>${enrich(o)}</li>`).join("")}</ul>` : "";
   const why = d.rationale ? `<p class="why"><span>\u4F9D\u636E</span>${enrich(d.rationale)}</p>` : "";
   return `<div class="decision ${status}" id="${escHtml(d.id)}"><div class="d-h"><strong class="d-id">${escHtml(d.id)}</strong>${badge}</div><p class="d-q">${enrich(d.question)}</p>${opts}<p class="d-res"><span class="d-res-l">${resLabel}</span>${enrich(d.resolution)}</p>${why}</div>`;
+}
+function assumptionCounts(assumptions) {
+  const c = { ok: 0, no: 0, pending: 0 };
+  for (const a of assumptions) {
+    const ev = effectiveVerified(a);
+    c[ev === true ? "ok" : ev === false ? "no" : "pending"]++;
+  }
+  return c;
+}
+function renderAssumptions(assumptions) {
+  if (!assumptions.length) return "";
+  const items = assumptions.map((a) => {
+    const ev = effectiveVerified(a);
+    const state = ev === true ? "ok" : ev === false ? "no" : "pending";
+    const badge = ev === true ? "\u2713 \u5DF2\u6838" : ev === false ? "\u2717 \u4E0D\u7B26" : "\u672A\u6838";
+    const note = ev === false && a.note ? `<p class="why"><span>\u4E0D\u7B26</span>${enrich(a.note)}</p>` : "";
+    return `<div class="decision asm-${state}" id="${escHtml(a.id)}"><div class="d-h"><strong class="d-id">${escHtml(a.id)}</strong><span class="asm-badge ${state}">${badge}</span></div><p class="d-q">${enrich(a.claim)}</p><p class="asm-ev"><span>\u8BC1\u636E</span>${enrich(a.evidence)}</p>${note}</div>`;
+  }).join("");
+  return `<section class="block decisions" id="assumptions"><h2><span class="card-n">\u2299</span>\u73B0\u72B6\u5047\u8BBE\uFF08\u5F85\u6838\u9A8C\uFF09</h2>${items}</section>`;
 }
 function renderAwareness(awareness) {
   if (!awareness.length) return "";
@@ -7136,6 +7218,7 @@ function renderVerdict(v) {
 function renderNav(spec2, openSections, foldSections, openDecisions, awareness, criteria, decidedDecisions = []) {
   const links = [];
   if (openDecisions.length) links.push(navLink("#decisions", "\u25C7", "\u5F85\u62CD\u677F", true));
+  if ((spec2.assumptions || []).length) links.push(navLink("#assumptions", "\u2299", "\u73B0\u72B6\u5047\u8BBE", true));
   if (awareness.length) links.push(navLink("#awareness", "\u25B2", "\u77E5\u60C5\u9879", true));
   for (const { s, n } of openSections) links.push(navLink(`#${escHtml(s.id)}`, pad(n), escHtml(s.title)));
   const foldChildren = [];

@@ -82,23 +82,23 @@ var require_code = __commonJS({
     };
     exports._Code = _Code;
     exports.nil = new _Code("");
-    function _(strs, ...args2) {
+    function _(strs, ...args) {
       const code = [strs[0]];
       let i = 0;
-      while (i < args2.length) {
-        addCodeArg(code, args2[i]);
+      while (i < args.length) {
+        addCodeArg(code, args[i]);
         code.push(strs[++i]);
       }
       return new _Code(code);
     }
     exports._ = _;
     var plus = new _Code("+");
-    function str(strs, ...args2) {
+    function str(strs, ...args) {
       const expr = [safeStringify(strs[0])];
       let i = 0;
-      while (i < args2.length) {
+      while (i < args.length) {
         expr.push(plus);
-        addCodeArg(expr, args2[i]);
+        addCodeArg(expr, args[i]);
         expr.push(plus, safeStringify(strs[++i]));
       }
       optimize(expr);
@@ -653,10 +653,10 @@ var require_codegen = __commonJS({
       }
     };
     var Func = class extends BlockNode {
-      constructor(name, args2, async) {
+      constructor(name, args, async) {
         super();
         this.name = name;
-        this.args = args2;
+        this.args = args;
         this.async = async;
       }
       render(opts) {
@@ -931,8 +931,8 @@ var require_codegen = __commonJS({
         return this;
       }
       // `function` heading (or definition if funcBody is passed)
-      func(name, args2 = code_1.nil, async, funcBody) {
-        this._blockNode(new Func(name, args2, async));
+      func(name, args = code_1.nil, async, funcBody) {
+        this._blockNode(new Func(name, args, async));
         if (funcBody)
           this.code(funcBody).endFunc();
         return this;
@@ -1026,13 +1026,13 @@ var require_codegen = __commonJS({
     }
     exports.not = not;
     var andCode = mappend(exports.operators.AND);
-    function and(...args2) {
-      return args2.reduce(andCode);
+    function and(...args) {
+      return args.reduce(andCode);
     }
     exports.and = and;
     var orCode = mappend(exports.operators.OR);
-    function or(...args2) {
-      return args2.reduce(orCode);
+    function or(...args) {
+      return args.reduce(orCode);
     }
     exports.or = or;
     function mappend(op) {
@@ -1311,12 +1311,12 @@ var require_errors = __commonJS({
       gen.if((0, codegen_1._)`${names_1.default.vErrors} === null`, () => gen.assign(names_1.default.vErrors, (0, codegen_1._)`[${err}]`), (0, codegen_1._)`${names_1.default.vErrors}.push(${err})`);
       gen.code((0, codegen_1._)`${names_1.default.errors}++`);
     }
-    function returnErrors(it, errs) {
+    function returnErrors(it, errs2) {
       const { gen, validateName, schemaEnv } = it;
       if (schemaEnv.$async) {
-        gen.throw((0, codegen_1._)`new ${it.ValidationError}(${errs})`);
+        gen.throw((0, codegen_1._)`new ${it.ValidationError}(${errs2})`);
       } else {
-        gen.assign((0, codegen_1._)`${validateName}.errors`, errs);
+        gen.assign((0, codegen_1._)`${validateName}.errors`, errs2);
         gen.return(false);
       }
     }
@@ -1765,8 +1765,8 @@ var require_code2 = __commonJS({
       ];
       if (it.opts.dynamicRef)
         valCxt.push([names_1.default.dynamicAnchors, names_1.default.dynamicAnchors]);
-      const args2 = (0, codegen_1._)`${dataAndSchema}, ${gen.object(...valCxt)}`;
-      return context !== codegen_1.nil ? (0, codegen_1._)`${func}.call(${context}, ${args2})` : (0, codegen_1._)`${func}(${args2})`;
+      const args = (0, codegen_1._)`${dataAndSchema}, ${gen.object(...valCxt)}`;
+      return context !== codegen_1.nil ? (0, codegen_1._)`${func}.call(${context}, ${args})` : (0, codegen_1._)`${func}(${args})`;
     }
     exports.callValidateCode = callValidateCode;
     var newRegExp = (0, codegen_1._)`new RegExp`;
@@ -1821,8 +1821,8 @@ var require_code2 = __commonJS({
           compositeRule: true
         }, schValid);
         gen.assign(valid, (0, codegen_1._)`${valid} || ${schValid}`);
-        const merged = cxt.mergeValidEvaluated(schCxt, schValid);
-        if (!merged)
+        const merged2 = cxt.mergeValidEvaluated(schCxt, schValid);
+        if (!merged2)
           gen.if((0, codegen_1.not)(valid));
       }));
       cxt.result(valid, () => cxt.reset(), () => cxt.error(true));
@@ -1906,10 +1906,10 @@ var require_keyword = __commonJS({
       const { gen, data, it } = cxt;
       gen.if(it.parentData, () => gen.assign(data, (0, codegen_1._)`${it.parentData}[${it.parentDataProperty}]`));
     }
-    function addErrs(cxt, errs) {
+    function addErrs(cxt, errs2) {
       const { gen } = cxt;
-      gen.if((0, codegen_1._)`Array.isArray(${errs})`, () => {
-        gen.assign(names_1.default.vErrors, (0, codegen_1._)`${names_1.default.vErrors} === null ? ${errs} : ${names_1.default.vErrors}.concat(${errs})`).assign(names_1.default.errors, (0, codegen_1._)`${names_1.default.vErrors}.length`);
+      gen.if((0, codegen_1._)`Array.isArray(${errs2})`, () => {
+        gen.assign(names_1.default.vErrors, (0, codegen_1._)`${names_1.default.vErrors} === null ? ${errs2} : ${names_1.default.vErrors}.concat(${errs2})`).assign(names_1.default.errors, (0, codegen_1._)`${names_1.default.vErrors}.length`);
         (0, errors_1.extendErrors)(cxt);
       }, () => cxt.error());
     }
@@ -4627,8 +4627,8 @@ var require_ref = __commonJS({
         cxt.result((0, code_1.callValidateCode)(cxt, v, passCxt), () => addEvaluatedFrom(v), () => addErrorsFrom(v));
       }
       function addErrorsFrom(source) {
-        const errs = (0, codegen_1._)`${source}.errors`;
-        gen.assign(names_1.default.vErrors, (0, codegen_1._)`${names_1.default.vErrors} === null ? ${errs} : ${names_1.default.vErrors}.concat(${errs})`);
+        const errs2 = (0, codegen_1._)`${source}.errors`;
+        gen.assign(names_1.default.vErrors, (0, codegen_1._)`${names_1.default.vErrors} === null ? ${errs2} : ${names_1.default.vErrors}.concat(${errs2})`);
         gen.assign(names_1.default.errors, (0, codegen_1._)`${names_1.default.vErrors}.length`);
       }
       function addEvaluatedFrom(source) {
@@ -6564,8 +6564,22 @@ var require_ajv = __commonJS({
   }
 });
 
-// lib/cli/render-spec-main.mjs
+// lib/cli/annotate-assumptions-main.mjs
 import { readFileSync, writeFileSync } from "node:fs";
+
+// lib/extract.mjs
+var ISLAND_RE = /<script\b[^>]*\btype=["']application\/json["'][^>]*\bid=["']specforge-data["'][^>]*>([\s\S]*?)<\/script>/i;
+function extractDataIsland(htmlText, { maxBytes = 5e6 } = {}) {
+  if (typeof htmlText !== "string") throw new TypeError("html must be a string");
+  if (Buffer.byteLength(htmlText, "utf8") > maxBytes) throw new Error("spec html exceeds size limit");
+  const m = htmlText.match(ISLAND_RE);
+  if (!m) throw new Error("no #specforge-data island found");
+  try {
+    return JSON.parse(m[1]);
+  } catch (e) {
+    throw new Error("data island is not valid JSON: " + e.message);
+  }
+}
 
 // lib/validate.mjs
 var import_ajv = __toESM(require_ajv(), 1);
@@ -6764,11 +6778,11 @@ function validateSpec(obj) {
     errors2.push("assumptionReview.reason must not be blank");
   }
   if (Array.isArray(obj.verdicts)) {
-    const seen = /* @__PURE__ */ new Set();
+    const seen2 = /* @__PURE__ */ new Set();
     for (const v of obj.verdicts) {
       if (!ids.includes(v.criterionId)) errors2.push(`verdict references unknown criterionId ${v.criterionId}`);
-      if (seen.has(v.criterionId)) errors2.push(`duplicate verdict for ${v.criterionId}`);
-      seen.add(v.criterionId);
+      if (seen2.has(v.criterionId)) errors2.push(`duplicate verdict for ${v.criterionId}`);
+      seen2.add(v.criterionId);
       if (v.status === "pass" && (!v.evidence || v.evidence.length === 0)) {
         errors2.push(`verdict ${v.criterionId} has status pass but no evidence`);
       }
@@ -7030,7 +7044,7 @@ function renderSpecHtml(spec2) {
   const awareness = spec2.awareness || [];
   const sections = spec2.sections || [];
   const criteria = spec2.criteria || [];
-  const assumptions = spec2.assumptions || [];
+  const assumptions2 = spec2.assumptions || [];
   const openDecisions = decisions.filter((d) => d.status === "open");
   const decidedDecisions = decisions.filter((d) => d.status !== "open");
   const isCollapsed = (s) => s.collapsed != null ? s.collapsed : s.type !== "flow";
@@ -7044,7 +7058,7 @@ function renderSpecHtml(spec2) {
     `<p class="mast-meta">${mastMeta(spec2, decisions, awareness, criteria)}</p>`,
     `</header>`,
     renderDecisions(openDecisions),
-    renderAssumptions(assumptions),
+    renderAssumptions(assumptions2),
     renderAwareness(awareness),
     ...openSections.map(renderOpenSection),
     renderFoldZone(spec2.summary, foldSections, criteria, decidedDecisions, spec2.verdicts || [])
@@ -7055,13 +7069,13 @@ function mastMeta(spec2, decisions, awareness, criteria) {
   const parts = [];
   if (spec2.meta.specId) parts.push(`<span><b>spec</b> ${escHtml(spec2.meta.specId)}</span>`);
   if (spec2.meta.revision != null) parts.push(`<span><b>rev</b> ${escHtml(spec2.meta.revision)}</span>`);
-  const open2 = decisions.filter((d) => d.status === "open").length;
-  if (decisions.length) parts.push(`<span>${decisions.length} \u51B3\u7B56${open2 ? ` \xB7 <b class="open-n">${open2} \u5F85\u62CD\u677F</b>` : ""}</span>`);
+  const open = decisions.filter((d) => d.status === "open").length;
+  if (decisions.length) parts.push(`<span>${decisions.length} \u51B3\u7B56${open ? ` \xB7 <b class="open-n">${open} \u5F85\u62CD\u677F</b>` : ""}</span>`);
   if (awareness.length) parts.push(`<span>${awareness.length} \u77E5\u60C5</span>`);
   parts.push(`<span>${criteria.length} \u9A8C\u6536\u70B9</span>`);
-  const assumptions = spec2.assumptions || [];
-  if (assumptions.length) {
-    const c = assumptionCounts(assumptions);
+  const assumptions2 = spec2.assumptions || [];
+  if (assumptions2.length) {
+    const c = assumptionCounts(assumptions2);
     parts.push(`<span class="cov-sum">\u73B0\u72B6\u5047\u8BBE \xB7 <b class="cv pass">${c.ok}\u2713</b> <b class="cv fail">${c.no}\u2717</b>${c.pending ? ` <b class="cv na">${c.pending} \u672A\u6838</b>` : ""}</span>`);
   }
   const verdicts = spec2.verdicts || [];
@@ -7072,9 +7086,9 @@ function mastMeta(spec2, decisions, awareness, criteria) {
   return parts.join('<span class="dot">\xB7</span>');
 }
 function verdictCounts(criteria, verdicts) {
-  const byId = new Map(verdicts.map((v) => [v.criterionId, v]));
+  const byId2 = new Map(verdicts.map((v) => [v.criterionId, v]));
   const counts = { pass: 0, partial: 0, fail: 0, na: 0 };
-  for (const c of criteria) counts[(byId.get(c.id) || {}).status || "na"]++;
+  for (const c of criteria) counts[(byId2.get(c.id) || {}).status || "na"]++;
   return counts;
 }
 function decorate(safe) {
@@ -7096,17 +7110,17 @@ function decisionCard(d) {
   const why = d.rationale ? `<p class="why"><span>\u4F9D\u636E</span>${enrich(d.rationale)}</p>` : "";
   return `<div class="decision ${status}" id="${escHtml(d.id)}"><div class="d-h"><strong class="d-id">${escHtml(d.id)}</strong>${badge}</div><p class="d-q">${enrich(d.question)}</p>${opts}<p class="d-res"><span class="d-res-l">${resLabel}</span>${enrich(d.resolution)}</p>${why}</div>`;
 }
-function assumptionCounts(assumptions) {
+function assumptionCounts(assumptions2) {
   const c = { ok: 0, no: 0, pending: 0 };
-  for (const a of assumptions) {
+  for (const a of assumptions2) {
     const ev = effectiveVerified(a);
     c[ev === true ? "ok" : ev === false ? "no" : "pending"]++;
   }
   return c;
 }
-function renderAssumptions(assumptions) {
-  if (!assumptions.length) return "";
-  const items = assumptions.map((a) => {
+function renderAssumptions(assumptions2) {
+  if (!assumptions2.length) return "";
+  const items = assumptions2.map((a) => {
     const ev = effectiveVerified(a);
     const state = ev === true ? "ok" : ev === false ? "no" : "pending";
     const badge = ev === true ? "\u2713 \u5DF2\u6838" : ev === false ? "\u2717 \u4E0D\u7B26" : "\u672A\u6838";
@@ -7165,19 +7179,19 @@ function renderFoldZone(summary, foldSections, criteria, decidedDecisions = [], 
   if (!folds.length) return "";
   return `<section class="folds" id="details"><p class="folds-label">\u7EC6\u8282\uFF08\u9ED8\u8BA4\u6298\u53E0\uFF0C\u6309\u9700\u5C55\u5F00\uFF09</p>${folds.join("")}</section>`;
 }
-function detail(id, label, inner, extra = "", open2 = false) {
-  return `<details class="fold ${extra}"${open2 ? " open" : ""} id="${id}"><summary>${label}</summary><div class="fold-body">${inner}</div></details>`;
+function detail(id, label, inner, extra = "", open = false) {
+  return `<details class="fold ${extra}"${open ? " open" : ""} id="${id}"><summary>${label}</summary><div class="fold-body">${inner}</div></details>`;
 }
 function criteriaInner(criteria, verdicts = []) {
   const counts = { must: 0, should: 0, could: 0 };
   for (const c of criteria) if (counts[c.priority] != null) counts[c.priority]++;
   const legend = ["must", "should", "could"].map((p) => `<span class="legend-chip"><span class="swatch ${p}"></span>${p} <b>${counts[p]}</b></span>`).join("");
-  const byId = new Map(verdicts.map((v) => [v.criterionId, v]));
+  const byId2 = new Map(verdicts.map((v) => [v.criterionId, v]));
   const verified = verdicts.length > 0;
   const cov = verified ? coverageBar(criteria, verdicts) : "";
   const items = criteria.map((c) => {
     const why = c.rationale ? `<p class="why"><span>\u4F9D\u636E</span>${enrich(c.rationale)}</p>` : "";
-    const v = byId.get(c.id);
+    const v = byId2.get(c.id);
     const status = verified ? v ? v.status : "na" : "";
     const vcls = verified ? ` v-${status}` : "";
     const vbadge = verified ? `<span class="vstat ${status}">${escHtml(status)}</span>` : "";
@@ -7242,57 +7256,62 @@ ${nav}
 </html>`;
 }
 
-// lib/cli/render-spec-main.mjs
-var args = process.argv.slice(2);
-var allowOpen = args.includes("--allow-open");
-var [inPath, outPath] = args.filter((a) => !a.startsWith("--"));
-if (!inPath || !outPath) {
-  console.error("usage: render.mjs <spec.json> <out.spec.html> [--allow-open]");
+// lib/cli/annotate-assumptions-main.mjs
+var [, , specHtmlPath, resultsPath] = process.argv;
+if (!specHtmlPath || !resultsPath) {
+  console.error("usage: annotate-assumptions.mjs <spec.html> <results.json>");
   process.exit(2);
 }
-var spec = JSON.parse(readFileSync(inPath, "utf8"));
-var ar = spec.assumptionReview;
-var asm = Array.isArray(spec.assumptions) ? spec.assumptions : null;
-var structErrors = [];
-if (ar && typeof ar === "object" && typeof ar.applicable === "boolean") {
-  if (ar.applicable === true && (!asm || asm.length === 0)) {
-    structErrors.push("assumptionReview.applicable=true \u4F46 assumptions \u4E3A\u7A7A\u2014\u2014\u5FC5\u987B\u5217\u51FA\u73B0\u72B6\u5047\u8BBE\uFF0C\u6216\u6539 applicable:false");
-  }
-  if (ar.applicable === false && asm && asm.length > 0) {
-    structErrors.push("assumptionReview.applicable=false \u5374\u643A\u5E26 assumptions\u2014\u2014applicable:false \u65F6\u4E0D\u5F97\u6709\u73B0\u72B6\u5047\u8BBE\uFF08\u5426\u5219\u7ED5\u8FC7\u6838\u9A8C\uFF09");
-  }
-}
-if (asm) {
-  asm.forEach((a, i) => {
-    const id = a && typeof a.id === "string" ? a.id : `#${i}`;
-    const ev = a && a.evidence;
-    if (typeof ev !== "string" || ev.trim() === "") {
-      structErrors.push(`assumption ${id} \u7F3A evidence\u2014\u2014\u73B0\u72B6\u65AD\u8A00\u5FC5\u987B\u5E26 file:line \u951A\u70B9\uFF08\u903C\u4F60\u53BB\u8BFB\u4EE3\u7801\u3001\u522B\u731C\uFF09`);
-    }
-  });
-}
-if (structErrors.length) {
-  console.error("\u62D2\u7EDD\u751F\u6210\uFF1A\u73B0\u72B6\u5047\u8BBE\uFF08assumptions\uFF09\u7ED3\u6784\u4E0D\u5408\u89C4\uFF1A\n" + structErrors.map((e) => "  - " + e).join("\n"));
+var spec = extractDataIsland(readFileSync(specHtmlPath, "utf8"));
+if (!/^specforge-draft\b/.test(spec.generator || "")) {
+  console.error(`\u62D2\u7EDD\u5199\u56DE\uFF1Agenerator="${spec.generator}" \u975E specforge-draft \u81EA\u4EA7 spec\u3002`);
   process.exit(3);
 }
-var { ok, errors } = validateSpec(spec);
-if (!ok) {
-  console.error("spec invalid:\n" + errors.join("\n"));
+var assumptions = spec.assumptions || [];
+if (!assumptions.length) {
+  console.error("spec \u65E0 assumptions\uFF0C\u65E0\u53EF\u56DE\u5199\u3002");
   process.exit(1);
 }
-var open = (spec.decisions || []).filter((d) => d.status === "open");
-if (open.length && !allowOpen) {
-  console.error(
-    `\u62D2\u7EDD\u751F\u6210\uFF1A\u8FD8\u6709 ${open.length} \u4E2A\u5F85\u62CD\u677F\u51B3\u7B56\uFF08status:"open"\uFF09\u672A\u6536\u655B\u3002
-spec \u4E0D\u8BE5\u5E26\u7740\u60AC\u800C\u672A\u51B3\u9879\u4EA4\u4ED8\u2014\u2014\u5148\u9010\u6761 ask user \u628A\u5B83\u4EEC\u62F7\u95EE\u5230 status:"decided"\uFF1A
-` + open.map((d) => `  - ${d.id ?? "?"}: ${d.question ?? ""}`).join("\n") + "\n\n\u53EA\u6709 user \u660E\u786E\u8BF4\u300C\u5148\u8DF3\u8FC7 / \u5148\u751F\u6210\u300D\u65F6\uFF0C\u624D\u663E\u5F0F\u52A0 --allow-open \u653E\u884C\u3002"
-  );
-  process.exit(3);
+var results = JSON.parse(readFileSync(resultsPath, "utf8"));
+if (!Array.isArray(results)) {
+  console.error("results \u5FC5\u987B\u662F\u6570\u7EC4 [{id,verified,note}]");
+  process.exit(1);
 }
-if (open.length && allowOpen) {
-  console.error(
-    `\u26A0 \u5E26 ${open.length} \u4E2A open \u51B3\u7B56\u751F\u6210\uFF08--allow-open \u5DF2\u8C41\u514D\uFF09\uFF1A` + open.map((d) => d.id ?? "?").join(", ")
-  );
+var asmIds = new Set(assumptions.map((a) => a.id));
+var seen = /* @__PURE__ */ new Set();
+var errs = [];
+for (const r of results) {
+  if (!r || typeof r.id !== "string") {
+    errs.push("\u7ED3\u679C\u9879\u7F3A id");
+    continue;
+  }
+  if (!asmIds.has(r.id)) errs.push(`\u672A\u77E5 id ${r.id}`);
+  if (seen.has(r.id)) errs.push(`\u91CD\u590D id ${r.id}`);
+  seen.add(r.id);
+  if (r.verified !== true && r.verified !== false) errs.push(`${r.id} verified \u5FC5\u987B\u662F true/false`);
+  if (r.verified === false && (typeof r.note !== "string" || r.note.trim() === "")) {
+    errs.push(`${r.id} \u5224 false \u5FC5\u987B\u7ED9\u975E\u7A7A note`);
+  }
 }
-writeFileSync(outPath, renderSpecHtml(spec));
-console.error("wrote " + outPath);
+for (const id of asmIds) if (!seen.has(id)) errs.push(`\u7F3A id ${id} \u7684\u6838\u9A8C\u7ED3\u679C`);
+if (errs.length) {
+  console.error("\u62D2\u7EDD\u5199\u56DE\uFF08\u6574\u6B21\u539F\u5B50\uFF0C\u4E0D\u534A\u5199\uFF09\uFF1A\n" + errs.map((e) => "  - " + e).join("\n"));
+  process.exit(1);
+}
+var byId = new Map(results.map((r) => [r.id, r]));
+var nextAssumptions = assumptions.map((a) => {
+  const r = byId.get(a.id);
+  const next = { ...a, verified: r.verified, verifiedDigest: digest(a.claim, a.evidence) };
+  if (r.verified === false) next.note = r.note;
+  else delete next.note;
+  return next;
+});
+var merged = { ...spec, assumptions: nextAssumptions };
+var { ok, errors } = validateSpec(merged);
+if (!ok) {
+  console.error("spec invalid after patch:\n" + errors.join("\n"));
+  process.exit(1);
+}
+writeFileSync(specHtmlPath, renderSpecHtml(merged));
+var pass = nextAssumptions.filter((a) => a.verified === true).length;
+console.error(`annotated ${specHtmlPath}: ${pass}/${nextAssumptions.length} \u73B0\u72B6\u5047\u8BBE\u6838\u9A8C\u901A\u8FC7`);
