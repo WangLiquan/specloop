@@ -9,7 +9,7 @@
       "name": "specforge",
       "source": "./",
       "description": "draft（需求 → spec.html）+ verify（spec → 对话差距清单）两个 skill。",
-      "version": "2.1.0"
+      "version": "2.2.0"
     }
   ]
 }
