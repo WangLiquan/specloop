@@ -7058,10 +7058,9 @@ function renderSpecHtml(spec2) {
     `<p class="mast-meta">${mastMeta(spec2, decisions, awareness, criteria)}</p>`,
     `</header>`,
     renderDecisions(openDecisions),
-    renderAssumptions(assumptions),
     renderAwareness(awareness),
     ...openSections.map(renderOpenSection),
-    renderFoldZone(spec2.summary, foldSections, criteria, decidedDecisions, spec2.verdicts || [])
+    renderFoldZone(spec2.summary, foldSections, criteria, decidedDecisions, spec2.verdicts || [], assumptions)
   ].filter(Boolean).join("\n");
   return page(spec2.meta.title, renderNav(spec2, openSections, foldSections, openDecisions, awareness, criteria, decidedDecisions), body, spec2);
 }
@@ -7118,16 +7117,14 @@ function assumptionCounts(assumptions) {
   }
   return c;
 }
-function renderAssumptions(assumptions) {
-  if (!assumptions.length) return "";
-  const items = assumptions.map((a) => {
+function assumptionItems(assumptions) {
+  return assumptions.map((a) => {
     const ev = effectiveVerified(a);
     const state = ev === true ? "ok" : ev === false ? "no" : "pending";
     const badge = ev === true ? "\u2713 \u5DF2\u6838" : ev === false ? "\u2717 \u4E0D\u7B26" : "\u672A\u6838";
     const note = ev === false && a.note ? `<p class="why"><span>\u4E0D\u7B26</span>${enrich(a.note)}</p>` : "";
     return `<div class="decision asm-${state}" id="${escHtml(a.id)}"><div class="d-h"><strong class="d-id">${escHtml(a.id)}</strong><span class="asm-badge ${state}">${badge}</span></div><p class="d-q">${enrich(a.claim)}</p><p class="asm-ev"><span>\u8BC1\u636E</span>${enrich(a.evidence)}</p>${note}</div>`;
   }).join("");
-  return `<section class="block decisions" id="assumptions"><h2><span class="card-n">\u2299</span>\u73B0\u72B6\u5047\u8BBE\uFF08\u5F85\u6838\u9A8C\uFF09</h2>${items}</section>`;
 }
 function renderAwareness(awareness) {
   if (!awareness.length) return "";
@@ -7155,10 +7152,17 @@ function renderInner(s) {
 function renderOpenSection({ s, n }) {
   return `<section id="${escHtml(s.id)}" class="card"><h2><span class="card-n">${pad(n)}</span>${escHtml(s.title)}</h2>${renderInner(s)}</section>`;
 }
-function renderFoldZone(summary, foldSections, criteria, decidedDecisions = [], verdicts2 = []) {
+function renderFoldZone(summary, foldSections, criteria, decidedDecisions = [], verdicts2 = [], assumptions = []) {
   const folds = [];
   if (summary) {
     folds.push(detail("summary", "\u6982\u8FF0", `<p>${enrich(summary)}</p>`));
+  }
+  if (assumptions.length) {
+    folds.push(detail(
+      "assumptions",
+      `\u73B0\u72B6\u5047\u8BBE <span class="fold-n">${assumptions.length}</span>`,
+      assumptionItems(assumptions)
+    ));
   }
   if (decidedDecisions.length) {
     folds.push(detail(
@@ -7218,11 +7222,11 @@ function renderVerdict(v) {
 function renderNav(spec2, openSections, foldSections, openDecisions, awareness, criteria, decidedDecisions = []) {
   const links = [];
   if (openDecisions.length) links.push(navLink("#decisions", "\u25C7", "\u5F85\u62CD\u677F", true));
-  if ((spec2.assumptions || []).length) links.push(navLink("#assumptions", "\u2299", "\u73B0\u72B6\u5047\u8BBE", true));
   if (awareness.length) links.push(navLink("#awareness", "\u25B2", "\u77E5\u60C5\u9879", true));
   for (const { s, n } of openSections) links.push(navLink(`#${escHtml(s.id)}`, pad(n), escHtml(s.title)));
   const foldChildren = [];
   if (spec2.summary) foldChildren.push(navLink("#summary", "\xB7", "\u6982\u8FF0", false, true));
+  if ((spec2.assumptions || []).length) foldChildren.push(navLink("#assumptions", "\xB7", "\u73B0\u72B6\u5047\u8BBE", false, true));
   if (decidedDecisions.length) foldChildren.push(navLink("#decided", "\xB7", "\u5DF2\u51B3\u7B56", false, true));
   for (const { s } of foldSections) foldChildren.push(navLink(`#${escHtml(s.id)}`, "\xB7", escHtml(s.title), false, true));
   if (criteria.length) foldChildren.push(navLink("#criteria", "\xB7", "\u9A8C\u6536\u70B9", false, true));
